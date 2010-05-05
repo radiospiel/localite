@@ -2,6 +2,7 @@
 # set up fake rails
 
 require "active_record"
+require "fileutils"
 
 LOGFILE = "log/test.log"
 SQLITE_FILE = ":memory:"
