@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+#
+# Start a console that initializes the gem
+#
+require "irb"
+require "rubygems"
+
+begin
+  require 'wirble'
+  Wirble.init
+  Wirble.colorize
+rescue LoadError
+  STDERR.puts "To enable colorized and tab completed run 'gem install wirble'"
+end
+
+$: << "#{File.dirname(__FILE__)}/../lib"
+$: << "#{File.dirname(__FILE__)}/../init.rb"
+
+IRB.start
