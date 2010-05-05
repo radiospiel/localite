@@ -41,10 +41,7 @@ module Localite
   # string, assuming a base language string.
   module StringAdapter
     def t(*args)
-      STDERR.puts "translating #{self.inspect}"
       translated = Localite.translate(self, :no_raise) || self
-      STDERR.puts "translated ---> #{translated.inspect}"
-      translated
       Template.run translated, *args
     end
   end
@@ -77,15 +74,15 @@ module Localite::Etest
     assert_equal "3 items",               Template.run("{*pl 'item', xyz.length*}", :xyz => "abc")
   end
   
-  # def test_tmpl
-  #   assert_equal "xyz",                   "xyz".t(:xyz => "abc")
-  #   assert_equal "abc",                   "{*xyz*}".t(:xyz => "abc")
-  #   assert_equal "3",                     "{*xyz.length*}".t(:xyz => "abc")
-  #   assert_equal "3",                     "{*xyz.length*}".t(:xyz => "abc")
-  #   assert_equal "3 Fixnums",             "{*pl xyz*}".t(:xyz => [1, 2, 3])
-  #   assert_equal "3 Fixnums and 1 Float", "{*pl xyz*} and {*pl fl*}".t(:xyz => [1, 2, 3], :fl => [1.0])
-  #  end
-  # 
+  def test_tmpl
+    assert_equal "xyz",                   "xyz".t(:xyz => "abc")
+    assert_equal "abc",                   "{*xyz*}".t(:xyz => "abc")
+    assert_equal "3",                     "{*xyz.length*}".t(:xyz => "abc")
+    assert_equal "3",                     "{*xyz.length*}".t(:xyz => "abc")
+    assert_equal "3 Fixnums",             "{*pl xyz*}".t(:xyz => [1, 2, 3])
+    assert_equal "3 Fixnums and 1 Float", "{*pl xyz*} and {*pl fl*}".t(:xyz => [1, 2, 3], :fl => [1.0])
+   end
+  
 
 #   def test_html
 #     assert_equal ">",                      "{*'>'*}".t(:xyz => [1, 2, 3], :fl => [1.0])

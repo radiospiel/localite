@@ -19,11 +19,12 @@ module Localite::Scope
   #
   # If no translation will be found we look up the same entries in the base
   # locale.
-  def scope(s, &block)
-    scopes.push(s)
-    yield
-  ensure
-    scopes.pop
+  def scope(*args, &block)
+    return yield if args.empty?
+
+    scopes.exec(args.shift) do
+      scope *args, &block
+    end
   end
   
   def scopes
@@ -33,15 +34,50 @@ module Localite::Scope
   private
   
   class Scopes < Array
+    def exec(s, &block)
+      s = "#{last}.#{s}" if last
+      push s
+      
+      yield
+    ensure
+      pop
+    end
+    
     def each(s)
-      @scopes.reverse_each do |entry| 
+      reverse_each do |entry| 
         yield "#{entry}.#{s}"
       end
+
       yield s
-    end 
-      
-    def push(s)
-      super "#{last}.#{s}"
+    end
+  end
+end
+
+module Localite::Scope::Etest
+  Scopes = Localite::Scope::Scopes
+  
+  def test_scope
+    scope = Scopes.new
+    scope.exec("a") do 
+      scope.exec("b") do 
+        scope.exec("b") do 
+          r = []
+          scope.each("str") do |scoped|
+            r << scoped
+          end
+          assert_equal %w(a.b.b.str a.b.str a.str str), r
+        end
+      end
+    end
+  end
+  
+  def test_more_scopes
+    Localite.scope("a", :b, "b") do 
+      r = []
+      Localite.scopes.each("str") do |scoped|
+        r << scoped
+      end
+      assert_equal %w(a.b.b.str a.b.str a.str str), r
     end
   end
 end

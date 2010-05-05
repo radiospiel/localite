@@ -21,15 +21,13 @@ module Localite::Translate
   private
 
   def do_translate(locale, s)
-    r = scopes.each(s) do |scoped_string|
+    scopes.each(s) do |scoped_string|
       tr = do_translate_raw locale, scoped_string
-      break tr if tr
+      return tr if tr
     end
 
-    if !r
-      record_missing locale, s
-    end
-    r
+    record_missing locale, s
+    nil
   end
   
   def do_translate_raw(locale, s)
