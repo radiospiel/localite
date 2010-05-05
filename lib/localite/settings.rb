@@ -23,7 +23,7 @@ module Localite::Settings
   # runs a block in the changed locale
   def in(locale, &block)
     old = self.locale
-    self.locale = locale
+    self.locale = locale if locale
     yield
   ensure
     self.locale = old
