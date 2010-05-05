@@ -26,5 +26,7 @@ end
 #
 # run tests
 
-Etest.autorun if defined?(Etest)
+require "etest"
+
+Etest.autorun # if defined?(Etest)
 MiniTest::Unit.autorun

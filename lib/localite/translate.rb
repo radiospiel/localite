@@ -2,23 +2,62 @@ module Localite::Translate
   # 
   # translate a string 
   #
-  # returns the translated string or symbol in the current locale.
-  # If no translation is found try the base locale. If still no
-  # translation is found, then
-  # a) return the string if a string was passed in, or
-  # b) raise an exception if a symbol was passed in.
+  # returns the translated string in the current locale.
+  # If no translation is found try the base locale. 
+  # If still no translation is found, return nil
   # 
-  def translate(s)
-    tr = translate_scoped(s)
-    return tr if tr
+  def translate(s, raise_mode)
+    r = do_translate(locale, s)
+    return r if r
+    
+    if base != locale 
+      r = do_translate(base, s)
+      return r if r
+    end
+    
+    raise Missing, locale, s if raise_mode != :no_raise
+  end
 
-    tr = (locale != base) && self.in(base) do translate_scoped(s) end
-    return tr if tr
+  private
 
-    return s  if s.is_a?(String)
+  def do_translate(locale, s)
+    r = scopes.each(s) do |scoped_string|
+      tr = do_translate_raw locale, scoped_string
+      break tr if tr
+    end
 
-    s = "#{scopes.join(".")}.#{s}" unless scopes.empty?
+    if !r
+      record_missing locale, s
+    end
+    r
+  end
+  
+  def do_translate_raw(locale, s)
+    I18n.translate(s, :raise => true)
+  rescue I18n::MissingTranslationData
+    nil
+  end
+  
+  #
+  # log a missing translation and raise an exception 
+  def record_missing(locale, s)
+    @missing_translations ||= Set.new
+    @missing_translations << [ locale,  s ]
+    logger.warn "Missing translation: [#{locale}] #{s.inspect}"
+  end
+  
+  public
+  
+  class Missing < RuntimeError
+    attr :locale
+    attr :string
 
-    MissingTranslation.record! locale, s
+    def initialize(opts)
+      @locale, @string = *opts
+    end
+
+    def to_s
+      "Missing translation: [#{locale}] #{string.inspect}"
+    end
   end
 end
