@@ -90,4 +90,12 @@ module Localite::Scope::Etest
       assert_equal %w(a.b.b.c.d.str.y a.b.str.y a.str.y str.y), r
     end
   end
+  
+  def test_empty_scopes
+    r = []
+    Localite.scopes.each("str.y") do |scoped|
+      r << scoped
+    end
+    assert_equal %w(str.y), r
+  end
 end

@@ -16,12 +16,16 @@ module Localite::Template
   
   class Env
     def method_missing(sym, *args, &block)
-      sym = sym.to_sym
-      return @host[sym] if @host.key?(sym)
+      begin
+        return @host[sym.to_sym]
+      rescue IndexError
+      end
 
-      sym = sym.to_s
-      return @host[sym] if @host.key?(sym)
-      
+      begin
+        return @host[sym.to_s]
+      rescue IndexError
+      end
+
       super
     end
     
@@ -30,12 +34,8 @@ module Localite::Template
     end
 
     def [](code)
-      r = eval(code)
-      r = r.name if r.respond_to?(:name)
-      r.to_s 
+      eval(code).to_s
     end
-
-    public :eval
   end
   
   def self.run(template, opts = {})
