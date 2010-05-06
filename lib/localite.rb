@@ -1,3 +1,5 @@
+require "logger"
+
 #
 # This is a *really* simple template and translation engine.
 #
@@ -24,7 +26,13 @@ module Localite
   #
   # a logger
   def self.logger
-    @logger ||= ActiveSupport::BufferedLogger.new("log/localite.log")
+    klass = if defined?(ActiveSupport)
+      ActiveSupport::BufferedLogger
+    else
+      ::Logger
+    end
+
+    @logger ||= klass.new("log/localite.log")
   end
   
   extend Settings
