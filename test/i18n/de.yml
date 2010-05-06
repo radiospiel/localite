@@ -1,0 +1,6 @@
+#
+# Some translation "fixtures"
+de:
+  outer:
+    inner:
+      x1: "de/outer/inner/x1"

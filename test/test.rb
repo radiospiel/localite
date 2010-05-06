@@ -2,7 +2,8 @@
 DIRNAME = File.expand_path File.dirname(__FILE__)
 Dir.chdir(DIRNAME)
 
-ETEST_TEST=true
+
+I18n.load_path += Dir["#{DIRNAME}/i18n/*.yml"]
 
 #
 # initialize the gem and the test runner
