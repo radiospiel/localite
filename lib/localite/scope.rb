@@ -50,6 +50,12 @@ module Localite::Scope
 
       yield s
     end
+  
+    def first(s)
+      each(s) do |entry|
+        return entry
+      end
+    end
   end
 end
 

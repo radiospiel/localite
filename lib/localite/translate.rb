@@ -1,3 +1,5 @@
+require "set"
+
 module Localite::Translate
   # 
   # translate a string 
@@ -26,7 +28,7 @@ module Localite::Translate
       return tr if tr
     end
 
-    record_missing locale, s
+    record_missing locale, scopes.first(s)
     nil
   end
   
