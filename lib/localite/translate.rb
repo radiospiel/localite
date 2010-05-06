@@ -11,11 +11,9 @@ module Localite::Translate
   def translate(s, raise_mode)
     r = do_translate(locale, s)
     return r if r
-    
-    if base != locale 
-      r = do_translate(base, s)
-      return r if r
-    end
+
+    r = do_translate(base, s) if base != locale
+    return r if r
     
     raise Missing, locale, s if raise_mode != :no_raise
   end
@@ -24,7 +22,7 @@ module Localite::Translate
 
   def do_translate(locale, s)
     scopes.each(s) do |scoped_string|
-      tr = do_translate_raw locale, scoped_string
+      tr = Localite::Translate.translate_via_i18n locale, scoped_string
       return tr if tr
     end
 
@@ -32,7 +30,9 @@ module Localite::Translate
     nil
   end
   
-  def do_translate_raw(locale, s)
+  def self.translate_via_i18n(locale, s)
+    locale = base unless I18n.backend.available_locales.include?(locale)
+    I18n.locale = locale
     I18n.translate(s, :raise => true)
   rescue I18n::MissingTranslationData
     nil
@@ -42,7 +42,9 @@ module Localite::Translate
   # log a missing translation and raise an exception 
   def record_missing(locale, s)
     @missing_translations ||= Set.new
-    @missing_translations << [ locale,  s ]
+    entry = [ locale, s ]
+    return if @missing_translations.include?(entry)
+    @missing_translations << entry
     logger.warn "Missing translation: [#{locale}] #{s.inspect}"
   end
   

@@ -2,9 +2,6 @@
 DIRNAME = File.expand_path File.dirname(__FILE__)
 Dir.chdir(DIRNAME)
 
-
-I18n.load_path += Dir["#{DIRNAME}/i18n/*.yml"]
-
 #
 # initialize the gem and the test runner
 require '../init'
@@ -14,6 +11,8 @@ require 'ruby-debug'
 
 require "#{DIRNAME}/initializers/fake_rails.rb"
 require "#{DIRNAME}/initializers/active_record.rb"
+
+I18n.load_path += Dir["#{DIRNAME}/i18n/*.yml"]
 
 # ---------------------------------------------------------------------
 
@@ -29,5 +28,4 @@ end
 
 require "etest"
 
-Etest.autorun # if defined?(Etest)
-MiniTest::Unit.autorun
+Etest.autorun

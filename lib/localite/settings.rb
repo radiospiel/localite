@@ -8,15 +8,21 @@ module Localite::Settings
   #
   # returns the current locale; defaults to the base locale
   def locale
-    I18n.locale
+    @locale || base
+  end
+
+  #
+  # is a specific locale available?
+  def available?(locale)
+    locale && I18n.backend.available_locales.include?(locale.to_sym)
   end
 
   #
   # sets the current locale. If the locale is not available it changes
   # the locale to the default locale.
   def locale=(locale)
-    locale = base unless I18n.backend.available_locales.include?(locale)
-    I18n.locale = locale
+    locale = locale.to_sym
+    @locale = available?(locale) ? locale : base
   end
 
   #

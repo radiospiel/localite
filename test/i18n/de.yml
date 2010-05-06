@@ -1,6 +1,14 @@
 #
 # Some translation "fixtures"
 de:
+  t: "de.t"
   outer:
     inner:
       x1: "de/outer/inner/x1"
+
+en:
+  base: "en_only"
+  t: "en.t"
+  outer:
+    inner:
+      x1: "en/outer/inner/x1"
