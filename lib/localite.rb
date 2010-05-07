@@ -50,7 +50,7 @@ module Localite
   module StringAdapter
     def t(*args)
       translated = Localite.translate(self, :no_raise) || self
-      Template.run translated, *args
+      Template.run :text, translated, *args
     end
   end
 
@@ -63,38 +63,25 @@ module Localite
   module SymbolAdapter
     def t(*args)
       translated = Localite.translate(self, :do_raise)
-      Template.run translated, *args
+      Template.run :text, translated, *args
     end
 
     # returns nil, if there is no translation.
     def t?(*args)
       translated = Localite.translate(self, :no_raise)
-      Template.run translated, *args if translated
+      Template.run :text, translated, *args if translated
     end
   end
 end
 
 module Localite::Etest
-  Template = Localite::Template
-  
-  def test_templates
-    assert_equal "abc",                   Template.run("{*xyz*}", :xyz => "abc")
-    assert_equal "3 items",               Template.run("{*pl 'item', xyz.length*}", :xyz => "abc")
-  end
-  
+
+  #
+  # make sure .t actually runs the Template engine
   def test_tmpl
     assert_equal "xyz",                   "xyz".t(:xyz => "abc")
     assert_equal "abc",                   "{*xyz*}".t(:xyz => "abc")
-    assert_equal "3",                     "{*xyz.length*}".t(:xyz => "abc")
-    assert_equal "3",                     "{*xyz.length*}".t(:xyz => "abc")
-    assert_equal "3 Fixnums",             "{*pl xyz*}".t(:xyz => [1, 2, 3])
-    assert_equal "3 Fixnums and 1 Float", "{*pl xyz*} and {*pl fl*}".t(:xyz => [1, 2, 3], :fl => [1.0])
   end
-
-  #
-  #
-  #
-  # Some translation "fixtures"
 
   def test_base_lookup
     assert !I18n.load_path.empty?
