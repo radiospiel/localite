@@ -1,3 +1,5 @@
+require "cgi"
+
 class Localite::Template < String
   def self.run(mode, template, opts = {})
     new(template).run(mode, opts)
@@ -64,21 +66,14 @@ class Localite::Template < String
     #
     # get all --> {* code *} <-- parts from the template strings and send
     # them thru the environment.
-    r = gsub(/\{\*([^\}]+?)\*\}/) do |_|
-      env[$1]
+    gsub(/\{\*([^\}]+?)\*\}/) do |_|
+      Modi.send mode, env[$1]
     end
-    
-    Modi.send(mode, r)
   end
 
   module Modi
-    def self.text(s)
-      s
-    end
-
-    def self.html(s)
-      CGI.escapeHTML s
-    end
+    def self.text(s); s; end
+    def self.html(s); CGI.escapeHTML(s); end
   end
 end
 
@@ -107,12 +102,9 @@ module Localite::Template::Etest
   end
 
   def test_html_env
-    h = Object.new.extend(Localite::Template::Env::Helpers)
-    assert_equal      "1 apple", h.pl("apple", 1)
-    assert_equal      "2 apples", h.pl("apple", 2)
-    assert_equal      "1 apple", h.pl("apples", 1)
-    assert_equal      "2 apples", h.pl("apples", 2)
-    
-    assert_equal      "3 Strings", h.pl(%w(apple peach cherry))
+    assert_equal "a>c",                 Template.run(:text, "{*xyz*}", :xyz => "a>c")
+    assert_equal "a&gt;c",              Template.run(:html, "{*xyz*}", :xyz => "a>c")
+    assert_equal "> a>c",               Template.run(:text, "> {*xyz*}", :xyz => "a>c")
+    assert_equal "> a&gt;c",            Template.run(:html, "> {*xyz*}", :xyz => "a>c")
   end
 end

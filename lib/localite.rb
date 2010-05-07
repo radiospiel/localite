@@ -50,7 +50,7 @@ module Localite
   module StringAdapter
     def t(*args)
       translated = Localite.translate(self, :no_raise) || self
-      Template.run :text, translated, *args
+      Localite.template translated, *args
     end
   end
 
@@ -63,14 +63,18 @@ module Localite
   module SymbolAdapter
     def t(*args)
       translated = Localite.translate(self, :do_raise)
-      Template.run :text, translated, *args
+      Localite.template translated, *args
     end
 
     # returns nil, if there is no translation.
     def t?(*args)
       translated = Localite.translate(self, :no_raise)
-      Template.run :text, translated, *args if translated
+      Localite.template translated, *args if translated
     end
+  end
+  
+  def self.template(template, *args)
+    Template.run mode, template, *args
   end
 end
 

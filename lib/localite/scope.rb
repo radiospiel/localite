@@ -31,7 +31,32 @@ module Localite::Scope
     Thread.current[:"localite:scopes"] ||= Scopes.new
   end
 
+  #
+  # The mode setting defines how the template engine deals with its
+  # parameters. In :html mode all parameters will be subject to HTML
+  # escaping, while in :text mode the parameters remain unchanged.
+  def html(&block)
+    in_mode :html, &block
+  end
+
+  def text(&block)
+    in_mode :text, &block
+  end
+  
+  def mode
+    Thread.current[:"localite:mode"] || :text
+  end
+  
   private
+
+  def in_mode(mode, &block)
+    old = Thread.current[:"localite:mode"]
+    Thread.current[:"localite:mode"] = mode
+    yield
+  ensure
+    Thread.current[:"localite:mode"] = old
+  end
+  
   
   class Scopes < Array
     def exec(s, &block)
@@ -103,5 +128,13 @@ module Localite::Scope::Etest
       r << scoped
     end
     assert_equal %w(str.y), r
+  end
+
+  def test_modi
+    assert_equal "abc", "param".t(:xxx => "abc")
+    assert_equal "a > c", "param".t(:xxx => "a > c")
+    assert_equal "a > c", Localite.text { "param".t(:xxx => "a > c") }
+    assert_equal "a &gt; c", Localite.html { "param".t(:xxx => "a > c") }
+    assert_equal "a > c", "param".t(:xxx => "a > c")
   end
 end

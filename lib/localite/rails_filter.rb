@@ -17,8 +17,10 @@ module Localite::RailsFilter
 
     #
     # set up localite for this action.
-    Localite.in(locale) do 
-      Localite.scope(*scope, &block)
+    Localite.html do
+      Localite.in(locale) do 
+        Localite.scope(*scope, &block)
+      end
     end
   end
   
