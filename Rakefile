@@ -12,6 +12,4 @@ task :rdoc do
   sh "rdoc -o doc/rdoc"
 end
 
-Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| 
-  puts ext
-  load ext }
+Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| load ext }

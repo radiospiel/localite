@@ -10,7 +10,6 @@ require 'logger'
 require 'ruby-debug'
 
 require "#{DIRNAME}/initializers/fake_rails.rb"
-require "#{DIRNAME}/initializers/active_record.rb"
 
 I18n.load_path += Dir["#{DIRNAME}/i18n/*.yml"]
 

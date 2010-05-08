@@ -27,7 +27,6 @@ if gem_config = YAML.load(File.read("#{GEM_ROOT}/config/gem.yml"))
     end
     
     p.runtime_dependencies = Dependency.load
-    STDERR.puts "runtime_dependencies = #{p.runtime_dependencies}"
   end
 
   desc "Rebuild and install the gem"
