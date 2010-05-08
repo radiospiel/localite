@@ -15,7 +15,7 @@ module Localite::Translate
     r = do_translate(base, s) if base != locale
     return r if r
     
-    raise Missing, locale, s if raise_mode != :no_raise
+    raise Missing, [locale, s] if raise_mode != :no_raise
   end
 
   private

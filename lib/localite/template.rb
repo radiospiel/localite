@@ -27,7 +27,7 @@ class Localite::Template < String
       def pl(name, count=nil)
         if count
           "#{count} #{count != 1 ? name.pluralize : name.singularize}"
-        elsif name.respond_to?(:first)
+        elsif name.respond_to?(:first) && !name.is_a?(String)
           pl name.first.class.name, name.length # special case, see above.
         else
           name.pluralize
@@ -37,13 +37,15 @@ class Localite::Template < String
 
     def method_missing(sym, *args, &block)
       begin
-        return @host[sym.to_sym]
+        return @host.fetch(sym.to_sym)
       rescue IndexError
+        :void
       end
-
+      
       begin
-        return @host[sym.to_s]
+        return @host.fetch(sym.to_s)
       rescue IndexError
+        :void
       end
 
       super
@@ -97,6 +99,9 @@ module Localite::Template::Etest
     assert_equal      "2 apples", h.pl("apple", 2)
     assert_equal      "1 apple", h.pl("apples", 1)
     assert_equal      "2 apples", h.pl("apples", 2)
+
+    assert_equal      "apples", h.pl("apples")
+    assert_equal      "apples", h.pl("apple")
     
     assert_equal      "3 Strings", h.pl(%w(apple peach cherry))
   end
@@ -106,5 +111,16 @@ module Localite::Template::Etest
     assert_equal "a&gt;c",              Template.run(:html, "{*xyz*}", :xyz => "a>c")
     assert_equal "> a>c",               Template.run(:text, "> {*xyz*}", :xyz => "a>c")
     assert_equal "> a&gt;c",            Template.run(:html, "> {*xyz*}", :xyz => "a>c")
+  end
+
+  def test_template_hash
+    assert_equal "a>c",                 Template.run(:text, "{*xyz*}", :xyz => "a>c")
+    assert_equal "a>c",                 Template.run(:text, "{*xyz*}", "xyz" => "a>c")
+  end
+
+  def test_template_hash_missing
+    assert_raise(NameError) {
+      Template.run(:text, "{*abc*}", :xyz => "a>c")
+    }
   end
 end

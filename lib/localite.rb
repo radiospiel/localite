@@ -26,11 +26,7 @@ module Localite
   #
   # a logger
   def self.logger
-    klass = if defined?(ActiveSupport)
-      ActiveSupport::BufferedLogger
-    else
-      ::Logger
-    end
+    klass = defined?(ActiveSupport) ? ActiveSupport::BufferedLogger : Logger
 
     @logger ||= klass.new("log/localite.log")
   end
@@ -155,6 +151,44 @@ module Localite::Etest
     assert_equal("x1", "x1".t)
   end
 
+  def test_lookup_symbols
+    assert :base.t?
+    
+    assert_equal "en_only", :base.t
+
+    Localite.in("en") do
+      assert_equal "en_only", :base.t
+    end
+
+    Localite.in("de") do
+      assert_equal "en_only", :base.t
+    end
+  end
+
+  def test_missing_lookup_symbols
+    assert !:missing.t?
+    assert_raise(Localite::Translate::Missing) {
+      assert_equal "en_only", :missing.t
+    }
+
+    Localite.in("en") do
+      assert_raise(Localite::Translate::Missing) {
+        :missing.t
+      }
+    end
+
+    Localite.in("de") do
+      assert_raise(Localite::Translate::Missing) {
+        :missing.t
+      }
+    end
+
+    begin
+      :missing.t
+    rescue Localite::Translate::Missing
+      assert_kind_of(String, $!.to_s)
+    end
+  end
    
 #   def test_html
 #     assert_equal ">",                      "{*'>'*}".t(:xyz => [1, 2, 3], :fl => [1.0])
