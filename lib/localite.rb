@@ -1,4 +1,5 @@
 require "logger"
+require "i18n"
 
 #
 # This is a *really* simple template and translation engine.
@@ -9,20 +10,12 @@ module Localite; end
 
 file_dir = File.expand_path(File.dirname(__FILE__))
 
-# require "#{file_dir}/localite/missing_translation"
 require "#{file_dir}/localite/scope"
 require "#{file_dir}/localite/settings"
 require "#{file_dir}/localite/translate"
 require "#{file_dir}/localite/template"
 
 module Localite
-  #
-  # Add the Localite adapters for Strings ad Symbols.
-  def self.init
-    String.send :include, StringAdapter
-    Symbol.send :include, SymbolAdapter
-  end
-
   #
   # a logger
   def self.logger
@@ -34,6 +27,12 @@ module Localite
   extend Settings
   extend Translate
   extend Scope
+
+  private
+  
+  def self.template(template, *args)
+    Template.run mode, template, *args
+  end
 
   public
   
@@ -69,9 +68,10 @@ module Localite
     end
   end
   
-  def self.template(template, *args)
-    Template.run mode, template, *args
-  end
+  #
+  # == initialize Localite adapters =======================================
+  ::String.send :include, StringAdapter
+  ::Symbol.send :include, SymbolAdapter
 end
 
 module Localite::Etest

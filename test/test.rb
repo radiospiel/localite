@@ -4,7 +4,8 @@ Dir.chdir(DIRNAME)
 
 #
 # initialize the gem and the test runner
-require '../init'
+require "rubygems"
+require '../lib/localite'
 
 require 'logger'
 require 'ruby-debug'
