@@ -22,7 +22,7 @@ module Localite::Translate
 
   def do_translate(locale, s)
     scopes.each(s) do |scoped_string|
-      tr = Localite::Translate.translate_via_i18n locale, scoped_string
+      tr = translate_via_i18n locale, scoped_string
       return tr if tr
     end
 
@@ -30,7 +30,7 @@ module Localite::Translate
     nil
   end
   
-  def self.translate_via_i18n(locale, s)
+  def translate_via_i18n(locale, s)
     locale = base unless I18n.backend.available_locales.include?(locale)
     I18n.locale = locale
     I18n.translate(s, :raise => true)
