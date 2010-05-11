@@ -21,7 +21,11 @@ module Localite
   def self.logger
     klass = defined?(ActiveSupport) ? ActiveSupport::BufferedLogger : Logger
 
-    @logger ||= klass.new("log/localite.log")
+    @logger ||= begin
+      klass.new("log/localite.log")
+    rescue Errno::ENOENT
+      ::Logger.new(STDERR)
+    end
   end
   
   extend Settings
