@@ -36,6 +36,10 @@ class Localite::Template < String
     end
 
     def method_missing(sym, *args, &block)
+      unless @host.is_a?(Hash)
+        return @host.send(sym, *args, &block)
+      end
+      
       begin
         return @host.fetch(sym.to_sym)
       rescue IndexError
@@ -91,6 +95,16 @@ module Localite::Template::Etest
     assert_equal "3",                     Template.run(:text, "{*xyz.length*}", :xyz => "abc")
     assert_equal "3 Fixnums",             Template.run(:text, "{*pl xyz*}", :xyz => [1, 2, 3])
     assert_equal "3 Fixnums and 1 Float", Template.run(:text, "{*pl xyz*} and {*pl fl*}", :xyz => [1, 2, 3], :fl => [1.0])
+  end
+
+  class Name < String
+    def name
+      self
+    end
+  end
+  
+  def test_nohash
+    assert_equal "abc",                   Template.run(:text, "{*name*}", Name.new("abc"))
   end
 
   def test_pl
