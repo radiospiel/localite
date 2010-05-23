@@ -18,17 +18,20 @@ module Localite::Filter
         filter_response controller
       end
     rescue
-      controller.response.body = "Caught exception: " + CGI::escapeHTML($!.inspect) if Rails.env.development?
+      if Rails.env.development?
+        controller.response.body = "Caught exception: " + CGI::escapeHTML($!.inspect) 
+        STDERR.puts $!.to_s + "\n\t" + $!.backtrace.join("\n\t")
+      end
       raise
     end
 
     def self.filter_response(controller)
-      next unless controller.response.headers["Content-Type"] =~ /text\/html/
+      return unless controller.response.headers["Content-Type"] =~ /text\/html/
       controller.response.body = filter_lang_nodes(controller.response.body)
     end
 
     def self.filter_lang_nodes(body)
-      doc = Nokogiri.XML "<filter-outer-span>#{body}</filter-outer-span>"
+      doc = Nokogiri.XML "<filter-outer-span xmlns:fb='http://facebook.com/'>#{body}</filter-outer-span>"
 
       doc.css("[lang]").each do |node|
         if Localite.locale.to_s != node["lang"]

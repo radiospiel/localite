@@ -8,7 +8,7 @@ module Localite::Settings
   #
   # returns the current locale; defaults to the base locale
   def locale
-    @locale || base
+    I18n.locale
   end
 
   #
@@ -22,7 +22,7 @@ module Localite::Settings
   # the locale to the default locale.
   def locale=(locale)
     locale = locale.to_sym
-    @locale = available?(locale) ? locale : base
+    I18n.locale = available?(locale) ? locale : base
   end
 
   #
