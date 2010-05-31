@@ -47,24 +47,17 @@ module Localite::Settings
   #
   # returns the current locale; defaults to the base locale
   def current_locale
-    @locale || base
+    Thread.current[:"localite:locale"] || base
+  end
+
+  def current_locale=(locale)
+    I18n.locale = Thread.current[:"localite:locale"] = locale
   end
 
   #
   # runs a block in the changed locale
   def locale(locale, &block)
-    old = @locale
-
-    locale = locale.to_sym
-    I18n.locale = @locale = if I18n.backend.available_locales.include?(locale)
-      locale
-    else
-      base
-    end
-
-    yield
-  ensure
-    I18n.locale = @locale = old
+    scope :locale => locale, &block
   end
 
   #
@@ -90,14 +83,39 @@ module Localite::Settings
   # If no translation will be found we look up the same entries in the base
   # locale.
   def scope(*args, &block)
-    length = args.length
-    return yield if args.empty?
+    options = if args.last.is_a?(Hash)
+      args.pop
+    else
+      {}
+    end
+    
+    #
+    # set locale
+    if locale = options[:locale]
+      old_locale = self.current_locale
+      self.current_locale = if I18n.backend.available_locales.include?(locale = locale.to_sym)
+        locale
+      else
+        base
+      end
+    end
 
+    #
+    # set format
+    if format = options[:format]
+      old_format = self.current_format
+      self.current_format = format
+    end
+
+    #
+    # adjust scope (from the remaining arguments)
     scopes.push(*args)
 
     yield
   ensure
     scopes.pop(*args)
+    self.current_format = old_format if old_format
+    self.current_locale = old_locale if old_locale
   end
   
   def scopes
@@ -112,15 +130,15 @@ module Localite::Settings
   # parameters. In :html mode all parameters will be subject to HTML
   # escaping, while in :text mode the parameters remain unchanged.
   #
-  def format(fmt, &block)
-    old = Thread.current[:"localite:format"]
-    Thread.current[:"localite:format"] = fmt
-    yield
-  ensure
-    Thread.current[:"localite:format"] = old
+  def format(format, &block)
+    scope :format => format, &block
   end
 
   def current_format
     Thread.current[:"localite:format"] || :text
+  end
+
+  def current_format=(fmt)
+    Thread.current[:"localite:format"] = fmt
   end
 end
