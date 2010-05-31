@@ -1,8 +1,8 @@
 require "cgi"
 
 class Localite::Template < String
-  def self.run(mode, template, opts = {})
-    new(template).run(mode, opts)
+  def self.run(format, template, opts = {})
+    new(template).run(format, opts)
   end
 
   #
@@ -65,7 +65,8 @@ class Localite::Template < String
     end
   end
   
-  def run(mode, opts = {})
+  def run(format, opts = {})
+
     #
     env = Env.new(opts)
 
@@ -73,7 +74,7 @@ class Localite::Template < String
     # get all --> {* code *} <-- parts from the template strings and send
     # them thru the environment.
     gsub(/\{\*([^\}]+?)\*\}/) do |_|
-      Modi.send mode, env[$1]
+      Modi.send format, env[$1]
     end
   end
 

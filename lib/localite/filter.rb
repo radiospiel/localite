@@ -1,26 +1,38 @@
 module Localite::Filter
   module ControllerFilter
+    #
+    # return the current locale, if any.
     def self.locale(controller)
-      #
-      # get the current locale
-      locale = begin
+      begin
         controller.send(:current_locale)
       rescue NoMethodError
+      end
+    end
+
+    #
+    # return the current scope(s) as an array.
+    def self.scopes(controller)
+      begin
+        controller.send(:localite_scopes)
+      rescue NoMethodError
+        []
       end
     end
 
     def self.filter(controller, &block)
       #
       # set up localite for this action.
-      Localite.in(locale(controller)) do
-        Localite.html(&block)
-
-        filter_response controller
+      Localite.locale(locale(controller)) do
+        Localite.format(:html) do
+          Localite.scope(*scopes(controller)) do
+            yield
+          end
+          filter_response controller
+        end
       end
     rescue
       if Rails.env.development?
         controller.response.body = "Caught exception: " + CGI::escapeHTML($!.inspect) 
-        STDERR.puts $!.to_s + "\n\t" + $!.backtrace.join("\n\t")
       end
       raise
     end

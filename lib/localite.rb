@@ -10,7 +10,7 @@ module Localite; end
 
 file_dir = File.expand_path(File.dirname(__FILE__))
 
-require "#{file_dir}/localite/scope"
+require "#{file_dir}/localite/scopes"
 require "#{file_dir}/localite/settings"
 require "#{file_dir}/localite/translate"
 require "#{file_dir}/localite/template"
@@ -30,12 +30,11 @@ module Localite
   
   extend Settings
   extend Translate
-  extend Scope
 
   private
   
   def self.template(template, *args)
-    Template.run mode, template, *args
+    Template.run current_format, template, *args
   end
 
   public
@@ -91,45 +90,45 @@ module Localite::Etest
     assert !I18n.load_path.empty?
     
     assert_equal("en.t", "t".t)
-    Localite.in("en") { 
+    Localite.locale("en") { 
       assert_equal("en.t", "t".t )
     }
     
-    Localite.in("de") { 
+    Localite.locale("de") { 
       assert_equal("de.t", "t".t )
     }
     
-    assert_equal("de.t", Localite.in("de") { "t".t })
+    assert_equal("de.t", Localite.locale("de") { "t".t })
   end
   
   def test_lookup_de
-    Localite.in("de") do
+    Localite.locale("de") do
       # flat translation
       assert_equal "de.t", "t".t
 
       Localite.scope(:outer, :inner) do
         assert_equal("de/outer/inner/x1", "x1".t)
       end
-  
+        
       # Miss "x1", and don't translate missing entries
       assert_equal("x1", "x1".t)
     end
   end
   
   def test_lookup_in_base
-    Localite.in("en") do
+    Localite.locale("en") do
       # lookup "base" in base translation
       assert_equal "en_only", "base".t
     end
 
-    Localite.in("de") do
+    Localite.locale("de") do
       # lookup "base" in base (i.e. en) translation
       assert_equal "en_only", "base".t
     end
   end
   
   def test_lookup_en
-    Localite.in("en") do
+    Localite.locale("en") do
 
       # flat translation
       assert_equal "en.t", "t".t
@@ -160,11 +159,11 @@ module Localite::Etest
     
     assert_equal "en_only", :base.t
 
-    Localite.in("en") do
+    Localite.locale("en") do
       assert_equal "en_only", :base.t
     end
 
-    Localite.in("de") do
+    Localite.locale("de") do
       assert_equal "en_only", :base.t
     end
   end
@@ -175,13 +174,13 @@ module Localite::Etest
       assert_equal "en_only", :missing.t
     }
 
-    Localite.in("en") do
+    Localite.locale("en") do
       assert_raise(Localite::Translate::Missing) {
         :missing.t
       }
     end
 
-    Localite.in("de") do
+    Localite.locale("de") do
       assert_raise(Localite::Translate::Missing) {
         :missing.t
       }
@@ -193,6 +192,64 @@ module Localite::Etest
       assert_kind_of(String, $!.to_s)
     end
   end
+
+  def catch_exception(klass, &block)
+    yield
+    nil
+  rescue klass
+    $!
+  end
+  
+  def test_missing_translation_wo_scope
+    r = catch_exception(Localite::Translate::Missing) do 
+      Localite.locale(:de) do
+        :x.t
+      end
+    end
+    
+    assert_equal(:de, r.locale)
+    assert_equal(:x, r.string)
+    assert_equal([], r.scope)
+  end
+
+  def test_missing_translation_w_scope
+    r = catch_exception(Localite::Translate::Missing) do 
+      Localite.locale(:de) do
+        Localite.scope(:ab, :cd) do
+          :yx.t
+        end
+      end
+    end
+    
+    assert_equal(:de, r.locale)
+    assert_equal(:yx, r.string)
+    assert_equal([:ab, :cd], r.scope)
+#    assert_equal(:text, r.format)
+  end
+
+  def test_translation_with_types
+    
+  end
+  
+  def test_default_format
+    assert_equal "abc", "param".t(:xxx => "abc")
+    assert_equal "a > c", "param".t(:xxx => "a > c")
+    assert_equal "abc", "param".t(:xxx => "abc")
+  end
+
+  def test_text_format
+    assert_equal "a > c", Localite.format(:text) { "param".t(:xxx => "a > c") }
+  end
+
+  def test_html_format
+    Localite.format(:html) { 
+      assert_equal(:html, Localite.current_format)
+      assert_equal "a &gt; c", "param".t(:xxx => "a > c")
+    }
+    
+    assert_equal "a &gt; c", Localite.format(:html) { "param".t(:xxx => "a > c") }
+  end
+  
    
 #   def test_html
 #     assert_equal ">",                      "{*'>'*}".t(:xyz => [1, 2, 3], :fl => [1.0])
