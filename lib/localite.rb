@@ -15,6 +15,7 @@ require "#{file_dir}/localite/scopes"
 require "#{file_dir}/localite/settings"
 require "#{file_dir}/localite/translate"
 require "#{file_dir}/localite/template"
+require "#{file_dir}/localite/storage"
 
 module Localite
   #

@@ -1,0 +1,10 @@
+param: "{* xxx *}"
+base: "en_only"
+t: "en.t"
+outer:
+  inner:
+    x1: "en/outer/inner/x1"
+html:
+  title: "This is hypertext"
+text:
+  title2: "This is <> hypertext"

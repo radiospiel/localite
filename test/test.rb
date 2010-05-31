@@ -12,7 +12,7 @@ require 'ruby-debug'
 
 require "#{DIRNAME}/initializers/fake_rails.rb"
 
-I18n.load_path += Dir["#{DIRNAME}/i18n/*.yml"]
+Localite::Storage.load "#{DIRNAME}/i18n/*"
 
 # ---------------------------------------------------------------------
 

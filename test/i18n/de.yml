@@ -1,22 +1,6 @@
-#
-# Some translation "fixtures"
-de:
-  t: "de.t"
-  outer:
-    inner:
-      x1: "de/outer/inner/x1"
-  html:
-    title: "Das ist Hypertext!"
-
-en:
-  param: "{* xxx *}"
-  base: "en_only"
-  t: "en.t"
-  outer:
-    inner:
-      x1: "en/outer/inner/x1"
-  html:
-    title: "This is hypertext"
-  text:
-    title2: "This is <> hypertext"
-
+t: "de.t"
+outer:
+  inner:
+    x1: "de/outer/inner/x1"
+html:
+  title: "Das ist Hypertext!"
