@@ -23,7 +23,7 @@ class Localite::Scopes < Array
       yield "#{entry}.#{s}"
     end
 
-    yield s
+    yield s.to_s
   end
 
   def first(s)

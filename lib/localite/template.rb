@@ -74,13 +74,8 @@ class Localite::Template < String
     # get all --> {* code *} <-- parts from the template strings and send
     # them thru the environment.
     gsub(/\{\*([^\}]+?)\*\}/) do |_|
-      Modi.send format, env[$1]
+      Localite::Format.send format, env[$1]
     end
-  end
-
-  module Modi
-    def self.text(s); s; end
-    def self.html(s); CGI.escapeHTML(s); end
   end
 end
 

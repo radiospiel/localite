@@ -10,6 +10,7 @@ module Localite; end
 
 file_dir = File.expand_path(File.dirname(__FILE__))
 
+require "#{file_dir}/localite/format"
 require "#{file_dir}/localite/scopes"
 require "#{file_dir}/localite/settings"
 require "#{file_dir}/localite/translate"
@@ -250,16 +251,26 @@ module Localite::Etest
     assert_equal "a &gt; c", Localite.format(:html) { "param".t(:xxx => "a > c") }
   end
   
-   
-#   def test_html
-#     assert_equal ">",                      "{*'>'*}".t(:xyz => [1, 2, 3], :fl => [1.0])
-#     assert_equal "&gt;",                   "{*'>'*}".t(:html, :xyz => [1, 2, 3], :fl => [1.0])
-#     assert_equal "3 Fixnums > 1 Float",    "{*pl xyz*} > {*pl fl*}".t(:xyz => [1, 2, 3], :fl => [1.0])
-#     assert_equal "3 Fixnums &gt; 1 Float", "{*pl xyz*} > {*pl fl*}".t(:html, :xyz => [1, 2, 3], :fl => [1.0])
-#   end
-# 
-#   def test_tmpl
-# #    assert_equal "3 chars", "{*len*} chars".t(:len => 3)
-#     assert_equal "3 chars", "{*length*} chars".t(:length => 3)
-#   end
+  def test_format_scope
+    Localite.format(:html) do
+      assert_equal("This is hypertext", :title.t)
+      assert_equal("This is &lt;&gt; hypertext", :title2.t)
+    end
+    Localite.format(:fbml) do
+      assert_equal("This is hypertext", :title.t)
+      assert_equal("This is &lt;&gt; hypertext", :title2.t)
+    end
+    Localite.format(:text) do
+      assert_equal("This is hypertext", :title.t)
+      assert_equal("This is <> hypertext", :title2.t)
+    end
+  end
+
+  def test_unavailable
+    Localite.locale("unknown") do
+      assert_equal(:en, Localite.current_locale)
+      assert_equal("This is hypertext", :title.t)
+    end
+  end
 end
+

@@ -5,6 +5,8 @@ de:
   outer:
     inner:
       x1: "de/outer/inner/x1"
+  html:
+    title: "Das ist Hypertext!"
 
 en:
   param: "{* xxx *}"
@@ -13,3 +15,8 @@ en:
   outer:
     inner:
       x1: "en/outer/inner/x1"
+  html:
+    title: "This is hypertext"
+  text:
+    title2: "This is <> hypertext"
+

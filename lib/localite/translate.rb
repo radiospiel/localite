@@ -9,39 +9,41 @@ module Localite::Translate
   # If still no translation is found, return nil
   # 
   def translate(s, raise_mode)
-    r = do_translate(current_locale, s)
-    return r if r
-
-    r = do_translate(base, s) if base != current_locale
-    return r if r
-
+    old_i18n_locale = I18n.locale
+    
+    formats = [ current_format, :html, :text, nil ]
+    
+    [ current_locale, base ].uniq.each do |locale|
+      scopes.each(s) do |scoped_string|
+        formats.each do |source_format|
+          next unless tr = translate_via_i18n(locale, source_format, scoped_string)
+          #
+          # reformat: if source format is text and target format is *ml:
+          if source_format != current_format &&  source_format == :text
+            tr = Localite::Format.send(current_format, tr)
+          end
+          return tr
+        end
+      end
+    end
+    
+    record_missing current_locale, scopes.first(s)
     return if raise_mode == :no_raise
-
-    raise Missing, [current_locale, s, scopes]
+    
+    raise Missing, [current_locale, s, scopes, formats.first]
+  ensure
+    I18n.locale = old_i18n_locale
   end
 
   private
-
-  def do_translate(locale, s)
-    scopes.each(s) do |scoped_string|
-      tr = translate_via_i18n locale, scoped_string
-      return tr if tr
-    end
-
-    record_missing locale, scopes.first(s)
-    nil
-  end
   
-  def translate_via_i18n(locale, s)
-    locale = base unless I18n.backend.available_locales.include?(locale)
-    
-    old = I18n.locale
+  def translate_via_i18n(locale, fmt, str)
     I18n.locale = locale
-    I18n.translate(s, :raise => true)
+    str = "#{fmt}.#{str}" if fmt
+    
+    I18n.translate(str, :raise => true)
   rescue I18n::MissingTranslationData
     nil
-  ensure
-    I18n.locale = old
   end
   
   #
@@ -67,7 +69,7 @@ module Localite::Translate
     end
 
     def to_s
-      "Missing translation: [#{locale.inspect}] #{string.inspect} (in scope #{scope.inspect})"
+      "Missing translation: [#{format}/#{locale}] #{string.inspect} (in scope #{scope.inspect})"
     end
   end
 end
