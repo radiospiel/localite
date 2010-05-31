@@ -11,9 +11,10 @@ module Localite::Translate
   def translate(s, raise_mode)
     old_i18n_locale = I18n.locale
     
-    formats = [ current_format, :html, :text, nil ]
+    formats = [ current_format, :html, :text, nil ].uniq
     
     [ current_locale, base ].uniq.each do |locale|
+
       scopes.each(s) do |scoped_string|
         formats.each do |source_format|
           next unless tr = translate_via_i18n(locale, source_format, scoped_string)
@@ -26,9 +27,11 @@ module Localite::Translate
         end
       end
     end
-    
+
     record_missing current_locale, scopes.first(s)
     return if raise_mode == :no_raise
+    
+    dlog "Missing", current_locale, s, scopes, formats.first
     
     raise Missing, [current_locale, s, scopes, formats.first]
   ensure

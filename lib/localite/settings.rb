@@ -141,4 +141,10 @@ module Localite::Settings
   def current_format=(fmt)
     Thread.current[:"localite:format"] = fmt
   end
+
+  #
+  # == Inspect ========================================================
+  def inspect
+    "#{current_format} #{current_locale.inspect} -> #{scopes.inspect} @ #{Thread.current.object_id}"
+  end
 end

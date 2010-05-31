@@ -209,7 +209,7 @@ module Localite::Etest
   
   def test_missing_translation_wo_scope
     r = catch_exception(Localite::Translate::Missing) do 
-      Localite.locale(:de) do
+      Localite.scope(:locale => :de, :format => :text) do
         :x.t
       end
     end
@@ -217,6 +217,29 @@ module Localite::Etest
     assert_equal(:de, r.locale)
     assert_equal(:x, r.string)
     assert_equal([], r.scope)
+    assert_equal(:text, r.format)
+
+    r = catch_exception(Localite::Translate::Missing) do 
+      Localite.scope(:locale => :de, :format => :html) do
+        :x.t
+      end
+    end
+    
+    assert_equal(:de, r.locale)
+    assert_equal(:x, r.string)
+    assert_equal([], r.scope)
+    assert_equal(:html, r.format)
+
+    r = catch_exception(Localite::Translate::Missing) do 
+      Localite.scope(:locale => :de) do
+        :x.t
+      end
+    end
+    
+    assert_equal(:de, r.locale)
+    assert_equal(:x, r.string)
+    assert_equal([], r.scope)
+    assert_equal(:text, r.format)
   end
 
   def test_missing_translation_w_scope
@@ -259,14 +282,17 @@ module Localite::Etest
   
   def test_format_scope
     Localite.format(:html) do
+      assert_equal :html, Localite.current_format
       assert_equal("This is hypertext", :title.t)
       assert_equal("This is &lt;&gt; hypertext", :title2.t)
     end
     Localite.format(:fbml) do
+      assert_equal :fbml, Localite.current_format
       assert_equal("This is hypertext", :title.t)
       assert_equal("This is &lt;&gt; hypertext", :title2.t)
     end
     Localite.format(:text) do
+      assert_equal :text, Localite.current_format
       assert_equal("This is hypertext", :title.t)
       assert_equal("This is <> hypertext", :title2.t)
     end
