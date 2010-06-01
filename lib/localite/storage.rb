@@ -1,56 +1,30 @@
-require "etest"
+require 'i18n'
 
-module Localite::Storage
-  def self.load(glob)
-    Dir.glob(glob).each do |file|
-      translations = load_file file
-      translations.each do |locale, data|
-        merge_translations(locale, data)
-      end
-    end
-  end
+module Localite
+  module Backend; end
+end
 
-  private
-  
-  def self.load_file(file)
-    Localite.logger.warn "Load translations from #{file}"
-
-    File.basename(file) =~ /(.*)\.([^\.]+)$/
-    locale, format = $1, $2
+class Localite::Backend::Simple < I18n::Backend::Simple
+  # Loads a single translations file by delegating to #load_rb or
+  # #load_yml depending on the file extension and directly merges the
+  # data to the existing translations. Raises I18n::UnknownFileType
+  # for all other file extensions.
+  def load_file(filename)
+    type = File.extname(filename).tr('.', '').downcase
+    raise UnknownFileType.new(type, filename) unless respond_to?(:"load_#{type}")
     
-    translations = case format
-    when "yml"
-      YAML.load File.read(file)
-    when "json"
-      JSON.parse File.read(file)
+    data = send :"load_#{type}", filename
+
+    #
+    # 
+    locale_from_file = File.basename(filename).sub(/\.[^\.]+$/, "")
+
+    if locale_from_file.length == 2 && data.keys.map(&:to_s) != [ locale_from_file ]
+      merge_translations locale_from_file, data
     else
-      raise "Unsupported file format #{file.inspect}"
+      data.each { |locale, d| 
+        merge_translations(locale, d) 
+      }
     end
-
-    if locale.length == 2
-      { locale => translations }
-    else
-      translations
-    end
-  end
-  
-  def self.each_full_key(hash, prefix=nil, &block)
-    hash.to_a.sort_by(&:first).each do |k,v|
-      k = "#{prefix}.#{k}" if prefix
-      if v.is_a?(Hash)
-        each_full_key v, k, &block
-        next
-      end
-
-      yield k
-    end
-  end
-  
-  def self.merge_translations(locale, translations)
-    each_full_key(translations) do |key|
-      Localite.logger.info "[#{locale}] add entry: #{key}"
-    end
-
-    I18n.backend.send :merge_translations, locale, translations
   end
 end

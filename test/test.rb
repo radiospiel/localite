@@ -12,7 +12,8 @@ require 'ruby-debug'
 
 require "#{DIRNAME}/initializers/fake_rails.rb"
 
-Localite::Storage.load "#{DIRNAME}/i18n/*"
+I18n.backend = Localite::Backend::Simple.new 
+I18n.load_path += Dir["#{DIRNAME}/i18n/*.yml"]
 
 # ---------------------------------------------------------------------
 
