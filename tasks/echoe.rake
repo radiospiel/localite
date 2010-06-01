@@ -38,7 +38,7 @@ if gem_config = YAML.load(File.read("#{GEM_ROOT}/config/gem.yml"))
     puts "============================================="
     puts "Installing gem..."
 
-    system "gem install #{gem} > /dev/null 2>&1"
+    system "sudo gem install #{gem} > /dev/null 2>&1"
 
     puts ""
     puts "I built and installed the gem for you. To upload, run "

@@ -145,6 +145,6 @@ module Localite::Settings
   #
   # == Inspect ========================================================
   def inspect
-    "#{current_format} #{current_locale.inspect} -> #{scopes.inspect} @ #{Thread.current.object_id}"
+    "<Localite #{current_format} #{current_locale.inspect} -> #{scopes.inspect}>"
   end
 end

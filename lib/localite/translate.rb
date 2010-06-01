@@ -31,8 +31,6 @@ module Localite::Translate
     record_missing current_locale, scopes.first(s)
     return if raise_mode == :no_raise
     
-    dlog "Missing", current_locale, s, scopes, formats.first
-    
     raise Missing, [current_locale, s, scopes, formats.first]
   ensure
     I18n.locale = old_i18n_locale

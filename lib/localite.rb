@@ -10,12 +10,13 @@ module Localite; end
 
 file_dir = File.expand_path(File.dirname(__FILE__))
 
-require "#{file_dir}/localite/format"
-require "#{file_dir}/localite/scopes"
-require "#{file_dir}/localite/settings"
-require "#{file_dir}/localite/translate"
-require "#{file_dir}/localite/template"
-require "#{file_dir}/localite/storage"
+$: << file_dir
+require "localite/format"
+require "localite/scopes"
+require "localite/settings"
+require "localite/translate"
+require "localite/template"
+require "localite/storage"
 
 module Localite
   #
