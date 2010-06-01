@@ -118,6 +118,15 @@ module Localite::Settings
     self.current_locale = old_locale if old_locale
   end
   
+  def scope!(*args, &block)
+    old = scopes
+    Thread.current[:"localite:scopes"] = Localite::Scopes.new
+    
+    scope(*args, &block)
+  ensure
+    Thread.current[:"localite:scopes"] = old
+  end
+  
   def scopes
     Thread.current[:"localite:scopes"] ||= Localite::Scopes.new
   end
