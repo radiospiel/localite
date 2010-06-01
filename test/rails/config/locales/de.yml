@@ -1,8 +1,4 @@
-html:
-  title: "Das ist Hypertext! (in HTML)"
+title: "Das ist Hypertext! (in HTML)"
 
 paragraph: |
   Was ich schon immer mal loswerden wollte...
-  
-title: "Das ist Hypertext! (in Text)"
-  

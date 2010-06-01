@@ -2,5 +2,4 @@ t: "de.t"
 outer:
   inner:
     x1: "de/outer/inner/x1"
-html:
-  title: "Das ist Hypertext!"
+title: "Das ist Hypertext!"

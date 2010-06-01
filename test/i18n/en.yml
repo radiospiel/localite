@@ -4,7 +4,5 @@ t: "en.t"
 outer:
   inner:
     x1: "en/outer/inner/x1"
-html:
-  title: "This is hypertext"
-text:
-  title2: "This is <> hypertext"
+title: "This is hypertext"
+title2: "This is <> hypertext"

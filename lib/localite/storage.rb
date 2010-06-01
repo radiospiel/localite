@@ -20,11 +20,9 @@ class Localite::Backend::Simple < I18n::Backend::Simple
     locale_from_file = File.basename(filename).sub(/\.[^\.]+$/, "")
 
     if locale_from_file.length == 2 && data.keys.map(&:to_s) != [ locale_from_file ]
-      merge_translations locale_from_file, data
+      merge_translations(locale_from_file, data) 
     else
-      data.each { |locale, d| 
-        merge_translations(locale, d) 
-      }
+      data.each { |locale, d| merge_translations(locale, d) }
     end
   end
 end

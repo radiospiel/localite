@@ -218,7 +218,6 @@ module Localite::Etest
     assert_equal(:de, r.locale)
     assert_equal(:x, r.string)
     assert_equal([], r.scope)
-    assert_equal(:text, r.format)
 
     r = catch_exception(Localite::Translate::Missing) do 
       Localite.scope(:locale => :de, :format => :html) do
@@ -229,7 +228,6 @@ module Localite::Etest
     assert_equal(:de, r.locale)
     assert_equal(:x, r.string)
     assert_equal([], r.scope)
-    assert_equal(:html, r.format)
 
     r = catch_exception(Localite::Translate::Missing) do 
       Localite.scope(:locale => :de) do
@@ -240,7 +238,6 @@ module Localite::Etest
     assert_equal(:de, r.locale)
     assert_equal(:x, r.string)
     assert_equal([], r.scope)
-    assert_equal(:text, r.format)
   end
 
   def test_missing_translation_w_scope

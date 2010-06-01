@@ -12,7 +12,7 @@
     rescue Localite::Translate::Missing
       $!
     end
-    %w(format string locale).map do |key|
+    %w(string locale).map do |key|
       content_tag :div, key + err.send(key).inspect, :class => key
     end.join("\n")
   %>
