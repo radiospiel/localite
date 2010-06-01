@@ -1,0 +1,19 @@
+<h1>Localite test page</h1>
+
+<div class="localite">
+  <div class="title"><%= :title.t %></div>
+  <div class="paragraph"><%= :paragraph.t %></div>
+</div>
+
+<div class="error">
+  <%=
+    err = begin
+      :error.t 
+    rescue Localite::Translate::Missing
+      $!
+    end
+    %w(format string locale).map do |key|
+      content_tag :div, key + err.send(key).inspect, :class => key
+    end.join("\n")
+  %>
+</div>

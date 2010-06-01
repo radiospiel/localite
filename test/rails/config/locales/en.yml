@@ -1,0 +1,7 @@
+html:
+  title: "This is hypertext! (as HTML)"
+
+paragraph: |
+  What I always wanted to tell you...
+  
+title: "This is hypertext! (as text)"
