@@ -6,7 +6,7 @@ module Localite::Filter
       args = controller.send(:localite_scopes)
       args.push :locale => controller.send(:current_locale),
         :format => controller.send(:localite_format)
-        
+
       Localite.scope(*args) do
         yield
       end
@@ -41,6 +41,7 @@ module Localite::Filter
   
   def self.included(klass)
     klass.send :include, ControllerMethods
+    klass.send :helper_method, :current_locale
     klass.send :around_filter, ControllerFilter
   end
 end
