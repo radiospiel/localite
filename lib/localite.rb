@@ -38,14 +38,6 @@ module Localite
   
   extend Settings
   extend Translate
-
-  private
-  
-  def self.template(template, *args)
-    Template.run current_format, template, *args
-  end
-
-  public
   
   #
   # Translating a string:
@@ -56,7 +48,7 @@ module Localite
   module StringAdapter
     def t(*args)
       translated = Localite.translate(self, :no_raise) || self
-      Localite.template translated, *args
+      Localite::Template.run translated, *args
     end
   end
 
@@ -69,13 +61,13 @@ module Localite
   module SymbolAdapter
     def t(*args)
       translated = Localite.translate(self, :do_raise)
-      Localite.template translated, *args
+      Localite::Template.run translated, *args
     end
 
     # returns nil, if there is no translation.
     def t?(*args)
       translated = Localite.translate(self, :no_raise)
-      Localite.template translated, *args if translated
+      Localite::Template.run translated, *args if translated
     end
   end
   
@@ -281,11 +273,6 @@ module Localite::Etest
   def test_format_scope
     Localite.format(:html) do
       assert_equal :html, Localite.current_format
-      assert_equal("This is hypertext", :title.t)
-      assert_equal("This is &lt;&gt; hypertext", :title2.t)
-    end
-    Localite.format(:fbml) do
-      assert_equal :fbml, Localite.current_format
       assert_equal("This is hypertext", :title.t)
       assert_equal("This is &lt;&gt; hypertext", :title2.t)
     end

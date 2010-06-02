@@ -1,8 +1,16 @@
 require "cgi"
 
 class Localite::Template < String
-  def self.run(format, template, opts = {})
-    new(template).run(format, opts)
+  def self.run(template, opts = {})
+    new(template).run(Localite.current_format, opts)
+  end
+
+  def self.html(template, opts = {})
+    new(template).run(:html, opts)
+  end
+
+  def self.text(template, opts = {})
+    new(template).run(:text, opts)
   end
 
   #
@@ -83,14 +91,14 @@ module Localite::Template::Etest
   Template = Localite::Template
   
   def test_templates
-    assert_equal "abc",                   Template.run(:text, "{*xyz*}", :xyz => "abc")
-    assert_equal "3 items",               Template.run(:text, "{*pl 'item', xyz.length*}", :xyz => "abc")
-    assert_equal "xyz",                   Template.run(:text, "xyz", :xyz => "abc")
-    assert_equal "abc",                   Template.run(:text, "{*xyz*}", :xyz => "abc")
-    assert_equal "3",                     Template.run(:text, "{*xyz.length*}", :xyz => "abc")
-    assert_equal "3",                     Template.run(:text, "{*xyz.length*}", :xyz => "abc")
-    assert_equal "3 Fixnums",             Template.run(:text, "{*pl xyz*}", :xyz => [1, 2, 3])
-    assert_equal "3 Fixnums and 1 Float", Template.run(:text, "{*pl xyz*} and {*pl fl*}", :xyz => [1, 2, 3], :fl => [1.0])
+    assert_equal "abc",                   Template.text("{*xyz*}", :xyz => "abc")
+    assert_equal "3 items",               Template.text("{*pl 'item', xyz.length*}", :xyz => "abc")
+    assert_equal "xyz",                   Template.text("xyz", :xyz => "abc")
+    assert_equal "abc",                   Template.text("{*xyz*}", :xyz => "abc")
+    assert_equal "3",                     Template.text("{*xyz.length*}", :xyz => "abc")
+    assert_equal "3",                     Template.text("{*xyz.length*}", :xyz => "abc")
+    assert_equal "3 Fixnums",             Template.text("{*pl xyz*}", :xyz => [1, 2, 3])
+    assert_equal "3 Fixnums and 1 Float", Template.text("{*pl xyz*} and {*pl fl*}", :xyz => [1, 2, 3], :fl => [1.0])
   end
 
   class Name < String
@@ -100,7 +108,7 @@ module Localite::Template::Etest
   end
   
   def test_nohash
-    assert_equal "abc",                   Template.run(:text, "{*name*}", Name.new("abc"))
+    assert_equal "abc",                   Template.text("{*name*}", Name.new("abc"))
   end
 
   def test_pl
@@ -117,20 +125,20 @@ module Localite::Template::Etest
   end
 
   def test_html_env
-    assert_equal "a>c",                 Template.run(:text, "{*xyz*}", :xyz => "a>c")
-    assert_equal "a&gt;c",              Template.run(:html, "{*xyz*}", :xyz => "a>c")
-    assert_equal "> a>c",               Template.run(:text, "> {*xyz*}", :xyz => "a>c")
-    assert_equal "> a&gt;c",            Template.run(:html, "> {*xyz*}", :xyz => "a>c")
+    assert_equal "a>c",                 Template.text("{*xyz*}", :xyz => "a>c")
+    assert_equal "a&gt;c",              Template.html("{*xyz*}", :xyz => "a>c")
+    assert_equal "> a>c",               Template.text("> {*xyz*}", :xyz => "a>c")
+    assert_equal "> a&gt;c",            Template.html("> {*xyz*}", :xyz => "a>c")
   end
 
   def test_template_hash
-    assert_equal "a>c",                 Template.run(:text, "{*xyz*}", :xyz => "a>c")
-    assert_equal "a>c",                 Template.run(:text, "{*xyz*}", "xyz" => "a>c")
+    assert_equal "a>c",                 Template.text("{*xyz*}", :xyz => "a>c")
+    assert_equal "a>c",                 Template.text("{*xyz*}", "xyz" => "a>c")
   end
 
   def test_template_hash_missing
     assert_raise(NameError) {
-      Template.run(:text, "{*abc*}", :xyz => "a>c")
+      Template.text("{*abc*}", :xyz => "a>c")
     }
   end
 end

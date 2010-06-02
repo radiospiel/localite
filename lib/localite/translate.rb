@@ -11,17 +11,36 @@ module Localite::Translate
   def translate(s, raise_mode)
     old_i18n_locale = I18n.locale
     
+    full_scoped = nil
+    
     [ current_locale, base ].uniq.each do |locale|
-
       scopes.each(s) do |scoped_string|
+        full_scoped = scoped_string unless full_scoped
+        
         next unless tr = translate_via_i18n(locale, scoped_string)
 
+        truncated = if tr.length > 40
+          tr[0,37] + "…" 
+        else
+          tr
+        end
+
+        msg = "Resolved #{full_scoped.inspect}"
+        msg += " (as #{scoped_string.inspect})" if scoped_string != full_scoped
+        logger.warn "#{msg} to #{truncated.inspect} [#{locale}]"
+        
         #
         # reformat: if target format is html:
         tr = Localite::Format.send(current_format, tr)
         return tr
       end
     end
+
+    src = caller[1]
+    if src =~ /^([^:]+:[^:]+):/
+      src = $1
+    end
+    logger.warn "[#{current_locale}] Could not translate #{full_scoped.inspect}; from #{src}"
 
     record_missing current_locale, scopes.first(s)
     return if raise_mode == :no_raise
@@ -35,8 +54,6 @@ module Localite::Translate
   
   def translate_via_i18n(locale, str)
     I18n.locale = locale
-    
-    logger.warn "Translate: #{str.inspect}"
     
     r = I18n.translate(str, :raise => true)
     return nil if r.is_a?(Hash)
