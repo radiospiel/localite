@@ -31,7 +31,7 @@ class Localite::Backend::Tr
   
   def duplicate_entry(k)
     msg = "[#{name}] " if name
-    dlog "#{msg}Duplicate entry", k.inspect 
+    Localite.logger.warn "#{msg}Duplicate entry" + k.inspect 
   end
 
   private
@@ -101,6 +101,12 @@ class Localite::Backend::Tr
     while !eof? do
       line = readline
       line =~ /^(\s*)(.*)$/
+      
+      if $2.empty?
+        value << ""
+        next
+      end
+
       line_indent = $1.length 
       
       #
@@ -215,4 +221,26 @@ TR
     d = Localite::Backend::Tr.parse(tr)
     assert_equal({"ml" => "mlober"}, d)
   end
+  
+  def test_multiline_w_spaces
+    tr = <<-TR
+refresh:
+  title:        t1
+  info:           |
+    line1
+    line2
+
+    line3
+    line4
+  title:        t2
+TR
+
+    p = Localite::Backend::Tr.new(tr)
+    d = p.parse
+    p.stubs(:dlog) {}
+ 
+    assert_equal "line1\nline2\n\nline3\nline4", d["refresh.info"]
+    assert_equal "t2", d["refresh.title"]
+  end
+
 end
