@@ -9,6 +9,7 @@ require '../lib/localite'
 
 require 'logger'
 require 'ruby-debug'
+require "mocha"
 
 require "#{DIRNAME}/initializers/fake_rails.rb"
 
