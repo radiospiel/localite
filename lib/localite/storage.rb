@@ -1,5 +1,6 @@
 require 'i18n'
 require 'stringio'
+require 'etest'
 
 module Localite
   module Backend; end
@@ -8,20 +9,29 @@ end
 require "#{File.dirname(__FILE__)}/tr"
 
 class Localite::Backend::Simple < I18n::Backend::Simple
+  def initialize(*args)
+    @locales = args.map(&:to_s) unless args.empty?
+  end
+
   # Loads a single translations file by delegating to #load_rb or
   # #load_yml depending on the file extension and directly merges the
   # data to the existing translations. Raises I18n::UnknownFileType
   # for all other file extensions.
   def load_file(filename)
+    locale_from_file = File.basename(filename).sub(/\.[^\.]+$/, "")
+    if @locales && !@locales.include?(locale_from_file)
+      # dlog "Skipping translations from #{filename}"
+      return
+    end
+
+    Localite.logger.warn "Loading translations from #{filename}"
     type = File.extname(filename).tr('.', '').downcase
     raise I18n::Backend::Simple::UnknownFileType.new(type, filename) unless respond_to?(:"load_#{type}")
-    
+
     data = send :"load_#{type}", filename
 
     #
     # 
-    locale_from_file = File.basename(filename).sub(/\.[^\.]+$/, "")
-
     if locale_from_file.length == 2 && data.keys.map(&:to_s) != [ locale_from_file ]
       merge_translations(locale_from_file, data) 
     else
@@ -34,10 +44,23 @@ class Localite::Backend::Simple < I18n::Backend::Simple
   def merge_translations(locale, data)
     translations_for_locale!(locale).update data
     super
+  rescue IndexError
   end
   
   def translations
     @translations ||= {}
+  end
+
+  def keys_for_locale(locale)
+    (translations[locale.to_sym] || {}).keys.sort
+  end
+
+  def keys
+    r = []
+    translations.each do |k,v|
+      r += v.keys
+    end
+    r.sort.uniq
   end
   
   def translations_for_locale(locale)
