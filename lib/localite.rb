@@ -209,7 +209,7 @@ module Localite::Etest
     
     assert_equal(:de, r.locale)
     assert_equal(:x, r.string)
-    assert_equal([], r.scope)
+    assert_equal("", r.scope)
 
     r = catch_exception(Localite::Translate::Missing) do 
       Localite.scope(:locale => :de, :format => :html) do
@@ -219,7 +219,7 @@ module Localite::Etest
     
     assert_equal(:de, r.locale)
     assert_equal(:x, r.string)
-    assert_equal([], r.scope)
+    assert_equal("", r.scope)
 
     r = catch_exception(Localite::Translate::Missing) do 
       Localite.scope(:locale => :de) do
@@ -229,7 +229,7 @@ module Localite::Etest
     
     assert_equal(:de, r.locale)
     assert_equal(:x, r.string)
-    assert_equal([], r.scope)
+    assert_equal("", r.scope)
   end
 
   def test_missing_translation_w_scope
@@ -243,7 +243,7 @@ module Localite::Etest
     
     assert_equal(:de, r.locale)
     assert_equal(:yx, r.string)
-    assert_equal([:ab, :cd], r.scope)
+    assert_equal("ab.cd", r.scope)
   end
 
   def test_reset_scope
@@ -255,7 +255,7 @@ module Localite::Etest
       end
     end
 
-    assert_equal([:ab, :cd], r.scope)
+    assert_equal("ab.cd", r.scope)
 
     r = catch_exception(Localite::Translate::Missing) do 
       Localite.scope(:ab) do
@@ -270,7 +270,7 @@ module Localite::Etest
       end
     end
 
-    assert_equal([:cd], r.scope)
+    assert_equal("cd", r.scope)
   end
 
   def test_default_format

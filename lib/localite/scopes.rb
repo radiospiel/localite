@@ -5,8 +5,12 @@ class Localite::Scopes < Array
   
   def push(*array)
     array.each do |s|
-      prebuilt = "#{@prebuilt.last}.#{s}" if @prebuilt.last
-      @prebuilt.push(prebuilt || s)
+      if @prebuilt.last
+        @prebuilt.push("#{@prebuilt.last}.#{s}")
+      else
+        @prebuilt.push(s.to_s)
+      end
+
       super(s)
     end
   end
@@ -35,7 +39,7 @@ class Localite::Scopes < Array
   end
   
   def to_s
-    @prebuilt.last
+    @prebuilt.last.to_s
   end
   
   def inspect
