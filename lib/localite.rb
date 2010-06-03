@@ -133,8 +133,8 @@ module Localite::Etest
       # flat translation
       assert_equal "en.t", "t".t
 
-      Localite.scope(:outer, :inner, :x1) do
-        assert_equal("en/outer/inner/x1", "x1".t)
+      Localite.scope(:outer, :inner) do
+        assert_equal("en/outer/inner/x1", :x1.t)
       end
   
       # Miss "x1", and don't translate missing entries

@@ -12,9 +12,5 @@ title: "This is hypertext"
 title2: "This is <> hypertext"
 
 outer: |
-  A first multiline
-  entry
-outer: Hey Ho!
-outer: |
   A multiline
   entry

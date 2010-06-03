@@ -14,7 +14,7 @@ require "mocha"
 require "#{DIRNAME}/initializers/fake_rails.rb"
 
 I18n.backend = Localite::Backend::Simple.new 
-I18n.load_path += Dir["#{DIRNAME}/i18n/*.yml"]
+I18n.load_path += Dir["#{DIRNAME}/i18n/*.tr"]
 
 # ---------------------------------------------------------------------
 

@@ -1,8 +1,0 @@
-param: "{* xxx *}"
-base: "en_only"
-t: "en.t"
-outer:
-  inner:
-    x1: "en/outer/inner/x1"
-title: "This is hypertext"
-title2: "This is <> hypertext"
