@@ -46,7 +46,7 @@ module Localite::Translate
     record_missing current_locale, current_scope.first(s)
     return if raise_mode == :no_raise
     
-    raise Missing, [current_locale, s, current_scope]
+    raise Missing, [current_locale, s]
   ensure
     I18n.locale = old_i18n_locale
   end
@@ -79,10 +79,9 @@ module Localite::Translate
     attr_reader :locale, :string, :scope
 
     def initialize(opts)
-      @locale, @string, @scope = *opts
-
-      @string = @string.to_s.dup unless @string.is_a?(Symbol)      
-      @scope = @scope.dup
+      @locale, @string = *opts
+      @scope = Localite.current_scope.to_s
+      # dlog "--> scope", @scope.inspect
     end
 
     def to_s
