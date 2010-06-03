@@ -50,6 +50,11 @@ module Localite
       translated = Localite.translate(self, :no_raise) || self
       Localite::Template.run translated, *args
     end
+
+    def t?(*args)
+      translated = Localite.translate(self, :no_raise)
+      Localite::Template.run translated, *args if translated
+    end
   end
 
   #
