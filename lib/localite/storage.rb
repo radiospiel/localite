@@ -1,8 +1,11 @@
 require 'i18n'
+require 'stringio'
 
 module Localite
   module Backend; end
 end
+
+require "#{File.dirname(__FILE__)}/tr"
 
 class Localite::Backend::Simple < I18n::Backend::Simple
   # Loads a single translations file by delegating to #load_rb or
@@ -24,5 +27,20 @@ class Localite::Backend::Simple < I18n::Backend::Simple
     else
       data.each { |locale, d| merge_translations(locale, d) }
     end
+  end
+
+  #
+  # The main differences to a yaml file are: ".tr" files support 
+  # specific and lower level entries for the same key, and allows
+  # to reopen a key.
+  #
+  # x:
+  #   y: "x.y translation"
+  #     z: "x.y.z translation"
+  #   y: 
+  #     a: "x.y.a translation"
+  #
+  def self.load_tr(filename)
+    Localite::Backend::Tr.load(filename)
   end
 end
