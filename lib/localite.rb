@@ -244,13 +244,35 @@ module Localite::Etest
     assert_equal(:de, r.locale)
     assert_equal(:yx, r.string)
     assert_equal([:ab, :cd], r.scope)
-#    assert_equal(:text, r.format)
   end
 
-  def test_translation_with_types
-    
+  def test_reset_scope
+    r = catch_exception(Localite::Translate::Missing) do 
+      Localite.scope(:ab) do
+        Localite.scope(:cd) do
+          :yx.t
+        end
+      end
+    end
+
+    assert_equal([:ab, :cd], r.scope)
+
+    r = catch_exception(Localite::Translate::Missing) do 
+      Localite.scope(:ab) do
+        Localite.scope!(:cd) do
+          assert_equal([:cd], Localite.current_scope)
+        end
+        assert_equal([:ab], Localite.current_scope)
+
+        Localite.scope!(:cd) do
+          :yx.t
+        end
+      end
+    end
+
+    assert_equal([:cd], r.scope)
   end
-  
+
   def test_default_format
     assert_equal "abc", "param".t(:xxx => "abc")
     assert_equal "a > c", "param".t(:xxx => "a > c")
@@ -288,6 +310,12 @@ module Localite::Etest
       assert_equal(:en, Localite.current_locale)
       assert_equal("This is hypertext", :title.t)
     end
+  end
+
+  def test_inspect
+    assert_nothing_raised {
+      Localite.inspect
+    }
   end
 end
 

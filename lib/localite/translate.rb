@@ -1,6 +1,20 @@
 require "set"
 
 module Localite::Translate
+  
+  private
+  
+  def log_translation(str, locale, scope, value)        
+    value = value[0,37] + "…" if value.length > 40
+
+    msg = "Resolved #{current_scope.first(str)}"
+    msg += " (as #{scope.inspect})" if current_scope.to_s != scope
+    msg += " to #{value.inspect} [#{locale}]"
+    logger.warn msg
+  end
+
+  public
+  
   # 
   # translate a string 
   #
@@ -11,28 +25,15 @@ module Localite::Translate
   def translate(s, raise_mode)
     old_i18n_locale = I18n.locale
     
-    full_scoped = nil
-    
     [ current_locale, base ].uniq.each do |locale|
-      scopes.each(s) do |scoped_string|
-        full_scoped = scoped_string unless full_scoped
-        
-        next unless tr = translate_via_i18n(locale, scoped_string)
+      current_scope.each(s) do |scope|
+        next unless value = translate_via_i18n(locale, scope)
 
-        truncated = if tr.length > 40
-          tr[0,37] + "…" 
-        else
-          tr
-        end
-
-        msg = "Resolved #{full_scoped.inspect}"
-        msg += " (as #{scoped_string.inspect})" if scoped_string != full_scoped
-        logger.warn "#{msg} to #{truncated.inspect} [#{locale}]"
+        log_translation s, locale, scope, value
         
         #
-        # reformat: if target format is html:
-        tr = Localite::Format.send(current_format, tr)
-        return tr
+        # reformat: if target format is html, convert the value into text.
+        return Localite::Format.send(current_format, value)
       end
     end
 
@@ -40,12 +41,12 @@ module Localite::Translate
     if src =~ /^([^:]+:[^:]+):/
       src = $1
     end
-    logger.warn "[#{current_locale}] Could not translate #{full_scoped.inspect}; from #{src}"
+    logger.warn "[#{current_locale}] Could not translate #{current_scope.first(s).inspect}; from #{src}"
 
-    record_missing current_locale, scopes.first(s)
+    record_missing current_locale, current_scope.first(s)
     return if raise_mode == :no_raise
     
-    raise Missing, [current_locale, s, scopes]
+    raise Missing, [current_locale, s, current_scope]
   ensure
     I18n.locale = old_i18n_locale
   end

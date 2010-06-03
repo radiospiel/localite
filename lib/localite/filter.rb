@@ -9,7 +9,7 @@ module Localite::Filter
 
       Localite.scope(*args) do
         if controller.logger
-          controller.logger.warn "Localite::Filter: scope is [#{Localite.current_locale}] #{Localite.scopes.join(".").inspect}"
+          controller.logger.warn "Localite::Filter: [#{Localite.inspect}]"
         end
         yield
       end

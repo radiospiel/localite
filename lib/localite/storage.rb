@@ -14,7 +14,7 @@ class Localite::Backend::Simple < I18n::Backend::Simple
   # for all other file extensions.
   def load_file(filename)
     type = File.extname(filename).tr('.', '').downcase
-    raise UnknownFileType.new(type, filename) unless respond_to?(:"load_#{type}")
+    raise I18n::Backend::Simple::UnknownFileType.new(type, filename) unless respond_to?(:"load_#{type}")
     
     data = send :"load_#{type}", filename
 
@@ -90,7 +90,7 @@ class Localite::Backend::Simple < I18n::Backend::Simple
   #   y: 
   #     a: "x.y.a translation"
   #
-  def self.load_tr(filename)
+  def load_tr(filename)
     Localite::Backend::Tr.load(filename)
   end
 end

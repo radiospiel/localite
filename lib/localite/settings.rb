@@ -109,17 +109,17 @@ module Localite::Settings
 
     #
     # adjust scope (from the remaining arguments)
-    scopes.push(*args)
+    current_scope.push(*args)
 
     yield
   ensure
-    scopes.pop(*args)
+    current_scope.pop(*args)
     self.current_format = old_format if old_format
     self.current_locale = old_locale if old_locale
   end
   
   def scope!(*args, &block)
-    old = scopes
+    old = current_scope
     Thread.current[:"localite:scopes"] = Localite::Scopes.new
     
     scope(*args, &block)
@@ -127,7 +127,7 @@ module Localite::Settings
     Thread.current[:"localite:scopes"] = old
   end
   
-  def scopes
+  def current_scope
     Thread.current[:"localite:scopes"] ||= Localite::Scopes.new
   end
 
@@ -154,6 +154,6 @@ module Localite::Settings
   #
   # == Inspect ========================================================
   def inspect
-    "<Localite #{current_format} #{current_locale.inspect} -> #{scopes.inspect}>"
+    "<Localite: [#{current_locale}/#{current_format}]: #{Localite.current_scope.inspect}"
   end
 end
