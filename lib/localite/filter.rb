@@ -8,8 +8,9 @@ module Localite::Filter
         :format => controller.send(:localite_format)
 
       Localite.scope(*args) do
-        controller.logger.warn "Localite::Filter: scope is [#{Localite.current_locale}] #{Localite.scopes.join(".").inspect}"
-
+        if controller.logger
+          controller.logger.warn "Localite::Filter: scope is [#{Localite.current_locale}] #{Localite.scopes.join(".").inspect}"
+        end
         yield
       end
     rescue
