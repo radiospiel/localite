@@ -1,0 +1,20 @@
+#
+# comment
+param: "{* xxx *}"
+base: "en_only"
+t: "en.t"
+#
+# another comment
+outer:
+  inner:
+    x1: "en/outer/inner/x1"
+title: "This is hypertext"
+title2: "This is <> hypertext"
+
+outer: |
+  A first multiline
+  entry
+outer: Hey Ho!
+outer: |
+  A multiline
+  entry

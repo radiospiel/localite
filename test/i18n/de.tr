@@ -1,0 +1,5 @@
+t: "de.t"
+outer:
+  inner:
+    x1: "de/outer/inner/x1"
+title: "Das ist Hypertext!"
