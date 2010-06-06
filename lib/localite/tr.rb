@@ -1,4 +1,36 @@
 class Localite::Backend::Tr 
+  #
+  # This class handles line reading from ios (files, etc.) and strings.
+  # It offers an one-line unread buffer.
+  class IO
+    attr_reader :lineno
+
+    def initialize(src)
+      @lineno = 0
+      @io = if src.is_a?(String)
+        StringIO.new(src)
+      else
+        src
+      end
+    end
+
+    def eof?
+      @unreadline.nil? && @io.eof?
+    end
+
+    def unreadline(line)
+      @unreadline = line
+    end
+
+    def readline
+      r, @unreadline = @unreadline, nil
+      r || begin
+        @lineno += 1
+        @io.readline
+      end
+    end
+  end
+
   def self.parse(io, name=nil)
     new(io, name).parse
   end
@@ -6,25 +38,38 @@ class Localite::Backend::Tr
   def self.load(file)
     new(File.open(file), file).parse
   end
-  
-  def initialize(io, name=nil)
-    io = StringIO.new(io) if io.is_a?(String)
-    @io = io
-    @name = name
+
+  def initialize(src, name=nil)
+    @src, @name = src, name
   end
+  
+  attr_reader :indent, :name
 
-  attr_reader :lineno, :indent, :name
+  def keys
+    return @keys if @keys
 
-  def parse(&block)
-    return parse_(&block) if block_given?
-
-    hash = {}
-    parse_ do |k,v|
-      duplicate_entry(k) if hash.key?(k)
-      hash[k] = v
+    if @parse
+      @keys = @parse.keys
+    else
+      @keys = []
+      parse_ do |k,_|
+        @keys << k
+      end
+      @keys.uniq!
     end
 
-    return hash
+    @keys.sort!
+  end
+
+  def parse
+    @parse ||= begin
+      hash = {}
+      parse_ do |k,v|
+        duplicate_entry(k) if hash.key?(k)
+        hash[k] = v
+      end
+      hash
+    end
   end
 
   protected
@@ -35,27 +80,7 @@ class Localite::Backend::Tr
   end
 
   private
-  
-  #
-  # --- add a one-line unread buffer to the @io -----------------------
-  def eof?
-    @unreadline.nil? && @io.eof?
-  end
 
-  def unreadline(line)
-    @unreadline = line
-  end
-  
-  def readline
-    r = @unreadline || begin
-      @lineno += 1
-      @io.readline
-    end
-
-    @unreadline = nil
-    r
-  end
-  
   #
   # -- TR scopes
   def register_scope(indent, name)
@@ -67,13 +92,12 @@ class Localite::Backend::Tr
   def current_scope
     @scopes[0..@indent].compact.join(".")
   end
-  
-  def parse_(&block)
-    @scopes = []
-    @lineno = 0
 
-    while !eof? do
-      line = readline
+  def parse_(&block)
+    @io = IO.new @src
+    @scopes = []
+    while !io.eof? do
+      line = io.readline
 
       #
       # skip empty and comment lines
@@ -87,19 +111,23 @@ class Localite::Backend::Tr
         value = $3.sub(/\s+$/, "")
         yield current_scope, evaluate(value) unless value.empty?
       else
-        msg = name ? "#{name}(#{lineno})" : "Line #{lineno}"
+        msg = name ? "#{name}(#{io.lineno})" : "Line #{io.lineno}"
 
         msg += ": format error in #{line.inspect}"
         dlog msg
         raise msg
       end
     end
+  ensure
+    @io = nil
   end
 
+  attr_reader :io
+  
   def read_multiline_value
     value = []
-    while !eof? do
-      line = readline
+    while !io.eof? do
+      line = io.readline
       line =~ /^(\s*)(.*)$/
       
       if $2.empty?
@@ -112,7 +140,7 @@ class Localite::Backend::Tr
       #
       # all multiline entries have a higher indent than the current line.
       if line_indent <= indent
-        unreadline(line)
+        io.unreadline(line)
         break
       end
       value << $2.sub(/\s+$/, "")
@@ -192,6 +220,8 @@ TR
 
     p = Localite::Backend::Tr.new(tr)
     p.stubs(:dlog) {}
+
+    assert_equal(%w(base ml outer outer.inner.x1 outer.inner.y1 param t title title2), p.keys)
     data = p.parse
 
     assert_equal("en/outer/inner/x1", data["outer.inner.x1"])

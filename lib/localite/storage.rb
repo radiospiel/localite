@@ -13,6 +13,7 @@ class Localite::Backend::Simple < I18n::Backend::Simple
     @locales = args.map(&:to_s) unless args.empty?
   end
 
+  #
   # Loads a single translations file by delegating to #load_rb or
   # #load_yml depending on the file extension and directly merges the
   # data to the existing translations. Raises I18n::UnknownFileType
@@ -79,9 +80,13 @@ class Localite::Backend::Simple < I18n::Backend::Simple
   # nested translations hash. Splits keys or scopes containing dots
   # into multiple keys, i.e. <tt>currency.format</tt> is regarded the same as
   # <tt>%w(currency format)</tt>.
+  #
+  # We are doing this because the default simple storage does not support
+  # keys, that inself are part of other keys, i.e. "field" and "field.subfield"
   def lookup(locale, key, scope = [], options = {})
     return unless key
     init_translations unless initialized?
+
     keys = I18n.normalize_keys(locale, key, scope, options[:separator])
     
     #
