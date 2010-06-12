@@ -39,7 +39,7 @@ class Localite::Scopes < Array
   end
   
   def to_s
-    @prebuilt.last.to_s
+    join(":")
   end
   
   def inspect

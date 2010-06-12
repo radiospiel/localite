@@ -13,6 +13,14 @@ class Localite::Backend::Simple < I18n::Backend::Simple
     @locales = args.map(&:to_s) unless args.empty?
   end
 
+  def available_locales
+    if @locales 
+      @locales.map(&:to_sym)
+    else
+      super
+    end
+  end
+
   #
   # Loads a single translations file by delegating to #load_rb or
   # #load_yml depending on the file extension and directly merges the

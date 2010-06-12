@@ -31,12 +31,12 @@ class Localite::Backend::Tr
     end
   end
 
-  def self.parse(io, name=nil)
-    new(io, name).parse
+  def self.parse(io, name=nil, &block)
+    new(io, name).parse(&block)
   end
 
-  def self.load(file)
-    new(File.open(file), file).parse
+  def self.load(file, &block)
+    new(File.open(file), file).parse(&block)
   end
 
   def initialize(src, name=nil)
@@ -61,14 +61,18 @@ class Localite::Backend::Tr
     @keys.sort!
   end
 
-  def parse
-    @parse ||= begin
-      hash = {}
-      parse_ do |k,v|
-        duplicate_entry(k) if hash.key?(k)
-        hash[k] = v
+  def parse(&block)
+    if block_given?
+      parse_(&block)
+    else
+      @parse ||= begin
+        hash = {}
+        parse_ do |k,v|
+          duplicate_entry(k) if hash.key?(k)
+          hash[k] = v
+        end
+        hash
       end
-      hash
     end
   end
 
@@ -86,7 +90,7 @@ class Localite::Backend::Tr
   def register_scope(indent, name)
     @indent = indent
     @scopes = @scopes[0, indent]
-    @scopes[indent] = name
+    @scopes[indent] = evaluate(name)
   end
   
   def current_scope
@@ -250,6 +254,18 @@ TR
     tr = "  ml: mlober"
     d = Localite::Backend::Tr.parse(tr)
     assert_equal({"ml" => "mlober"}, d)
+  end
+  
+  def test_parse_key_names
+    tr = <<TR
+  a: aa
+    "b.c": abc
+    "b\\nc": anlc
+    b.c: dot
+TR
+
+    d = Localite::Backend::Tr.parse(tr)
+    assert_equal({"a"=>"aa", "a.b.c"=>"dot", "a.b\nc"=>"anlc"}, d)
   end
   
   def test_multiline_w_spaces

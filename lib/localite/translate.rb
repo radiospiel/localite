@@ -8,7 +8,7 @@ module Localite::Translate
     value = value[0,37] + "…" if value.length > 40
 
     msg = "Resolved #{current_scope.first(str)}"
-    msg += " (as #{scope.inspect})" if current_scope.to_s != scope
+    msg += " (as #{scope.inspect})" if current_scope.first(str) != scope
     msg += " to #{value.inspect} [#{locale}]"
     logger.warn msg
   end
