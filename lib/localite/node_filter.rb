@@ -3,6 +3,8 @@ module Localite::NodeFilter
     #
     # set up localite for this action.
     def self.filter(controller, &block)
+      yield
+      
       return unless controller.response.headers["Content-Type"] =~ /text\/html/
       controller.response.body = filter_lang_nodes(controller.response.body)
     rescue
@@ -13,10 +15,15 @@ module Localite::NodeFilter
     end
 
     def self.filter_lang_nodes(body)
+      if body =~ /^(<!DOCTYPE .*?>)(.*)/m
+        doctype = $1
+        body = $2
+      end
+
       doc = Nokogiri.XML "<filter-outer-span xmlns:fb='http://facebook.com/'>#{body}</filter-outer-span>"
 
       doc.css("[lang]").each do |node|
-        if Localite.locale.to_s != node["lang"]
+        if Localite.current_locale.to_s != node["lang"]
           node.remove
           next
         end
@@ -30,7 +37,7 @@ module Localite::NodeFilter
         base.remove 
       end
 
-      doc.css("filter-outer-span").inner_html
+      doctype.to_s + doc.css("filter-outer-span").inner_html.html_safe
     end
     
     def self.base_node(node)
