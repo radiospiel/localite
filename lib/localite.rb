@@ -248,7 +248,7 @@ module Localite::Etest
     
     assert_equal(:de, r.locale)
     assert_equal(:yx, r.string)
-    assert_equal("ab.cd", r.scope)
+    assert_equal("ab:cd", r.scope)
   end
 
   def test_reset_scope
@@ -260,7 +260,7 @@ module Localite::Etest
       end
     end
 
-    assert_equal("ab.cd", r.scope)
+    assert_equal("ab:cd", r.scope)
 
     r = catch_exception(Localite::Translate::Missing) do 
       Localite.scope(:ab) do
