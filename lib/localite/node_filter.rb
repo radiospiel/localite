@@ -8,7 +8,7 @@ module Localite::NodeFilter
       
     return unless controller.response.headers["Content-Type"] =~ /text\/html/
     r = controller.response
-    r.body = filter_node r.body, Localite.current_locale
+    r.body = filter_body r.body, Localite.current_locale
   rescue
     if Rails.env.development?
       controller.response.body = "Caught exception: " + CGI::escapeHTML($!.inspect) 
@@ -22,52 +22,32 @@ module Localite::NodeFilter
 
   private
 
+  def self.filter_body(body, locale)
+    if body =~ /(<body[^>]*>)(.*)(<\/body>)/m
+      $`.html_safe + 
+      $1.html_safe +
+      filter_node($2, locale).html_safe + 
+      $3.html_safe + 
+      $'.html_safe
+    else
+      filter_node(body, locale).html_safe
+    end
+  end
+  
   def self.filter_node(body, locale)
     locale = locale.to_s
 
-    doc = Nokogiri.HTML fb_mark(body)
+    body = fb_mark(body)
+    
+    doc = Nokogiri.HTML body
     doc.css("[lang]").each do |node|
-      if locale != node["lang"]
-        node.remove
-        next
-      end
-
-      #
-      # we have a node with content specific for the current locale,
-      # i.e. a node to keep. If we find a base locale sibling (i.e. 
-      # with identical attributes but no "lang" attribute) prior 
-      # this node we have to remove that.
-      next unless base = base_node(node)
-      base.remove 
+      next unless locale != node["lang"]
+      node.remove
     end
 
     doc = doc.css("body").inner_html
-    filtered = fb_unmark(doc.to_s)
-  end
-
-  def self.base_node(node)
-    previous = node
-    while (previous = previous.previous) && previous.name == "text" do
-      :void
-    end
-
-    return previous if base_node?(node, previous)
-  end
-
-  #
-  # is \a other_node the base_node? for \a me?
-  def self.base_node?(me, other_node)
-    return false if !other_node
-    return false if me.name != other_node.name
-    return false if other_node.attributes.key?("lang")
-    return false if me.attributes.length != other_node.attributes.length + 1
-
-    # do we have a mismatching attribute?
-    other_node.attributes.each { |k,v| 
-      return false if me.attributes[k] != v 
-    }
-
-    true
+    doc = fb_unmark(doc)
+    doc.html_safe
   end
 
   #
@@ -78,42 +58,52 @@ module Localite::NodeFilter
   # a) Nokogiri.XML to let entities live, or, preferredly
   # b) Nokogiri.HTML to let namespaces survive
   #
-  module FbMarker
-    FB =            "fb:"
-    FB_RE =         /(<|<\/)fb:/
-    FB_MARKER =     "fb_marker_0xjgh_123_"
-    FB_MARKER_RE =  Regexp.new "(<|<\/)#{FB_MARKER}"
-    
-    def fb_mark(s)
-      s.gsub(FB_RE) { $1 + FB_MARKER }
-    end
-    
-    def fb_unmark(s)
-      s.gsub(FB_MARKER_RE) { $1 + FB }
-    end
+  FB =            "fb:"
+  FB_RE =         /(<|<\/)fb:/
+  FB_MARKER =     "fb_marker_0xjgh_123_"
+  FB_MARKER_RE =  Regexp.new "(<|<\/)#{FB_MARKER}"
+  
+  def self.fb_mark(s)
+    s.gsub(FB_RE) { $1 + FB_MARKER }
   end
-
-  extend FbMarker
+  
+  def self.fb_unmark(s)
+    s.gsub(FB_MARKER_RE) { $1 + FB }
+  end
 end
 
 module Localite::NodeFilter::Etest
   def normalize_xml(str)
-    str.gsub(/>(.*?)</) do |s|
-      ">#{$1.gsub(/\s+/, "")}<"
-    end.gsub(/"/, "'")
+    str.
+      gsub(/>(.*?)</m) do |s| ">#{$1.gsub(/\s+/m, " ")}<" end.  # normalize spaces between tags
+      gsub(/>\s*</m, ">\n<").                                   # normalize spaces in empty text nodes
+      gsub(/"/, "'")                                            # normalize ' and "
   end
   
   def assert_filtered(locale, src, expected)
-    filtered = Localite::NodeFilter.filter_node(src, locale)
-    expected = normalize_xml(expected)
+    filtered = Localite::NodeFilter.filter_body(src, locale)
     filtered = normalize_xml(filtered)
+
+    expected = normalize_xml(expected)
+
+    if expected == filtered
+      assert true
+      return
+    end
+
+    puts "expected:\n\n" + expected + "\n\n"
+    puts "filtered:\n\n" + filtered + "\n\n"
     
     assert_equal expected, filtered
   end
   
   ## 
-  def test_simple_html
+  def test_normalize_xml
     assert_equal "<p>ppp</p>", normalize_xml("<p>ppp</p>")
+    assert_equal "<p>a b c </p>\n", normalize_xml("<p>a   b c </p>\n")
+  end
+  
+  def test_simple_html
     assert_filtered :de, "<p>ppp</p>", "<p>ppp</p>"
     assert_filtered :en, "<p>ppp</p>", "<p>ppp</p>"
     assert_filtered :fr, "<p>ppp</p>", "<p>ppp</p>"
@@ -145,5 +135,64 @@ module Localite::NodeFilter::Etest
     #
     # Nokogiri translates UTF-8 umlauts into entities. That is ok (for now)
     assert_filtered :de, "<p lang='de'>Ä Ö</p>", "<p lang='de'>&Auml; &Ouml;</p>"
+  end
+
+  def test_full_html_match
+    src = <<-HTML
+<!--Force IE6 into quirks mode with this comment tag-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>socially.io</title>
+  </head>
+  <body x="y">
+    <p lang='de'>&Auml; &Ouml;</p>", "<p lang='de'>&Auml; &Ouml;</p>
+  </body>
+</html>
+HTML
+
+    expected = <<-HTML
+<!--Force IE6 into quirks mode with this comment tag-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>socially.io</title>
+  </head>
+  <body x="y">
+    <p lang='de'>&Auml; &Ouml;</p>", "<p lang='de'>&Auml; &Ouml;</p>
+  </body>
+</html>
+HTML
+
+    assert_filtered :de, src, expected
+  end
+
+  def test_full_html_miss
+    src = <<-HTML
+<!--Force IE6 into quirks mode with this comment tag-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>socially.io</title>
+  </head>
+  <body x="y">
+    <p lang='de'>&Auml; &Ouml;</p>
+  </body>
+</html>
+HTML
+
+    expected = <<-HTML
+<!--Force IE6 into quirks mode with this comment tag-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>socially.io</title>
+  </head>
+  <body x="y">
+  </body>
+</html>
+HTML
+
+    assert_filtered :en, src, expected
   end
 end
