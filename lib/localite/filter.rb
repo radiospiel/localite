@@ -8,8 +8,8 @@ module Localite::Filter
         :format => controller.send(:localite_format)
 
       Localite.scope(*args) do
-        if controller.logger
-          controller.logger.warn "Localite::Filter: [#{Localite.inspect}]"
+        if controller.logger && Rails.env.development?
+          controller.logger.warn "localite: [#{Localite.locale}]"
         end
         yield
       end
