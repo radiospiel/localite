@@ -9,7 +9,7 @@ module Localite::Filter
 
       Localite.scope(*args) do
         if controller.logger && Rails.env.development?
-          controller.logger.warn "localite: [#{Localite.locale}]"
+          controller.logger.warn "localite: [#{Localite.current_locale}]"
         end
         yield
       end
