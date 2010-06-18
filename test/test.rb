@@ -6,6 +6,7 @@ Dir.chdir(DIRNAME)
 # initialize the gem and the test runner
 require "rubygems"
 require '../lib/localite'
+require '../lib/localite/node_filter'
 
 require 'logger'
 require 'ruby-debug'
