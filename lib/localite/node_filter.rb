@@ -36,10 +36,9 @@ module Localite::NodeFilter
   
   def self.filter_node(body, locale)
     locale = locale.to_s
-
     body = fb_mark(body)
     
-    doc = Nokogiri.HTML body
+    doc = Nokogiri.HTML "<html><body>#{body}</body></html>"
     doc.css("[lang]").each do |node|
       next unless locale != node["lang"]
       node.remove
