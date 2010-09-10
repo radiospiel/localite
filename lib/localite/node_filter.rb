@@ -6,11 +6,9 @@ module Localite::NodeFilter
   def self.filter(controller, &block)
     yield
 
-    controller.timestamp "in Localite::NodeFilter"
     return unless controller.response.headers["Content-Type"] =~ /text\/html/
     r = controller.response
     r.body = filter_body r.body, Localite.current_locale
-    controller.timestamp "completed Localite::NodeFilter"
   rescue
     if Rails.env.development?
       controller.response.body = "Caught exception: " + CGI::escapeHTML($!.inspect) 

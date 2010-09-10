@@ -2,3 +2,5 @@ coverage
 doc/rdoc
 *log
 pkg
+.gemspec
+Manifest
