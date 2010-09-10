@@ -1,3 +1,5 @@
+load "#{File.dirname(__FILE__)}/vex/gem.rake"
+
 task :default => :test
 
 task :test do
@@ -11,5 +13,3 @@ end
 task :rdoc do
   sh "rdoc -o doc/rdoc"
 end
-
-Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| load ext }

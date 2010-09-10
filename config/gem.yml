@@ -1,7 +1,0 @@
-description: An easy to use localization gem.
-url: http://github.com/pboy/localite
-author: pboy
-email: eno-pboy@open-lab.org  
-ignore_pattern:
-  - "tmp/*"
-  - "**/.*"

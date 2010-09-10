@@ -1,0 +1,9 @@
+version: "0.5.7"
+description: An easy to use localization gem.
+summary: A wrapper around I18n, with some extras
+homepage: http://github.com/pboy/localite
+author: pboy
+email: eno-pboy@open-lab.org  
+dependencies:
+  - nokogiri
+  - i18n
