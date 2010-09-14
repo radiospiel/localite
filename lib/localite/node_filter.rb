@@ -6,7 +6,7 @@ module Localite::NodeFilter
   def self.filter(controller, &block)
     yield
 
-    return unless controller.response.headers["Content-Type"] =~ /text\/html/
+    return unless controller.response.headers["Content-Type"] =~ /(text\/html)|(fbml)/
     r = controller.response
     r.body = filter_body r.body, Localite.current_locale
   rescue
