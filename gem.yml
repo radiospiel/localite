@@ -1,4 +1,4 @@
-version: "0.6.1"
+version: "0.6.2"
 description: An easy to use localization gem.
 summary: A wrapper around I18n, with some extras
 homepage: http://github.com/pboy/localite

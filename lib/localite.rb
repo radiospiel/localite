@@ -38,48 +38,35 @@ module Localite
   
   extend Settings
   extend Translate
-  
-  #
-  # Translating a string:
-  #
-  # If no translation is found we try to translate the string in the base 
-  # language. If there is no base language translation we return the 
-  # string, assuming a base language string.
-  module StringAdapter
-    def t(*args)
-      translated = Localite.translate(self, :no_raise) || self
-      Localite::Template.run translated, *args
-    end
-
-    def t?(*args)
-      translated = Localite.translate(self, :no_raise)
-      Localite::Template.run translated, *args if translated
-    end
-  end
 
   #
   # Translating a string:
   #
-  # If no translation is found we try to translate the string in the base 
-  # language. If there is no base language translation we raise areturn the 
-  # string, assuming a base language string.
+  # If no translation is found we try to translate the string in the base language. 
+  # If there is neither a current nor a base language translation this
+  # raises Localite::Translating::Missing.
   module SymbolAdapter
     def t(*args)
-      translated = Localite.translate(self, :do_raise)
+      translated = Localite.translate(self)
       Localite::Template.run translated, *args
     end
+  end
+  ::Symbol.send :include, SymbolAdapter
 
-    # returns nil, if there is no translation.
-    def t?(*args)
-      translated = Localite.translate(self, :no_raise)
-      Localite::Template.run translated, *args if translated
+  #
+  # Translating a string:
+  #
+  # If no translation is found we try to translate the string in the base language. 
+  # If there is neither a current nor a base language translation this
+  # returns nil.
+  module StringAdapter
+    def t(*args)
+      self.to_sym.t(*args)
+    rescue Localite::Translate::Missing
+      nil
     end
   end
-  
-  #
-  # == initialize Localite adapters =======================================
   ::String.send :include, StringAdapter
-  ::Symbol.send :include, SymbolAdapter
 end
 
 module Localite::Etest
@@ -160,8 +147,6 @@ module Localite::Etest
   end
 
   def test_lookup_symbols
-    assert :base.t?
-    
     assert_equal "en_only", :base.t
 
     Localite.locale("en") do
@@ -174,7 +159,6 @@ module Localite::Etest
   end
 
   def test_missing_lookup_symbols
-    assert !:missing.t?
     assert_raise(Localite::Translate::Missing) {
       assert_equal "en_only", :missing.t
     }

@@ -23,14 +23,24 @@ module Localite::NodeFilter
   private
 
   def self.filter_body(body, locale)
-    if body =~ /(<body[^>]*>)(.*)(<\/body>)/m
-      $`.html_safe + 
-      $1.html_safe +
-      filter_node($2, locale).html_safe + 
-      $3.html_safe + 
-      $'.html_safe
+    r = if body =~ /(<body[^>]*>)(.*)(<\/body>)/m
+      $` + 
+      $1 +
+      filter_node($2, locale) + 
+      $3 + 
+      $'
     else
-      filter_node(body, locale).html_safe
+      filter_node(body, locale)
+    end
+    
+    html_safe(r)
+  end
+  
+  def self.html_safe(s)
+    if s.respond_to?(:html_safe)
+      s.html_safe
+    else
+      s
     end
   end
   
@@ -45,8 +55,7 @@ module Localite::NodeFilter
     end
 
     doc = doc.css("body").inner_html
-    doc = fb_unmark(doc)
-    doc.html_safe
+    html_safe fb_unmark(doc)
   end
 
   #

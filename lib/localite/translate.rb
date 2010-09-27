@@ -22,7 +22,7 @@ module Localite::Translate
   # If no translation is found try the base locale. 
   # If still no translation is found, return nil
   # 
-  def translate(s, raise_mode)
+  def translate(s)
     old_i18n_locale = I18n.locale
     
     [ current_locale, base ].uniq.each do |locale|
@@ -44,8 +44,6 @@ module Localite::Translate
     logger.warn "[#{current_locale}] Could not translate #{current_scope.first(s).inspect}; from #{src}"
 
     record_missing current_locale, current_scope.first(s)
-    return if raise_mode == :no_raise
-    
     raise Missing, [current_locale, s]
   ensure
     I18n.locale = old_i18n_locale
