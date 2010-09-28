@@ -39,7 +39,7 @@ class Localite::Scopes < Array
   end
   
   def to_s
-    join(":")
+    join(".")
   end
   
   def inspect
@@ -59,8 +59,8 @@ module Localite::Scopes::Etest
 
     assert_equal %w(a b b str), scope
     assert_equal %w(a.b.b.str a.b.b a.b a), scope.instance_variable_get("@prebuilt").reverse
-    assert_equal "a:b:b:str", scope.to_s
-    assert_equal "\"a:b:b:str\"", scope.inspect
+    assert_equal "a.b.b.str", scope.to_s
+    assert_equal "\"a.b.b.str\"", scope.inspect
   end
   
   def test_more_scopes

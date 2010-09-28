@@ -61,9 +61,13 @@ module Localite
   # returns nil.
   module StringAdapter
     def t(*args)
-      self.to_sym.t(*args)
-    rescue Localite::Translate::Missing
-      nil
+      translated = begin
+        Localite.translate(self)
+      rescue Localite::Translate::Missing
+        self
+      end
+      
+      Localite::Template.run translated, *args
     end
   end
   ::String.send :include, StringAdapter
@@ -232,7 +236,7 @@ module Localite::Etest
     
     assert_equal(:de, r.locale)
     assert_equal(:yx, r.string)
-    assert_equal("ab:cd", r.scope)
+    assert_equal("ab.cd", r.scope)
   end
 
   def test_reset_scope
@@ -244,7 +248,7 @@ module Localite::Etest
       end
     end
 
-    assert_equal("ab:cd", r.scope)
+    assert_equal("ab.cd", r.scope)
 
     r = catch_exception(Localite::Translate::Missing) do 
       Localite.scope(:ab) do

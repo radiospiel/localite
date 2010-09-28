@@ -33,4 +33,3 @@ module Localite::Format::Etest
     assert_equal "xxx\nyyy", Localite::Format.html("text:xxx\nyyy")
   end
 end
-
