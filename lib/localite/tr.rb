@@ -35,8 +35,10 @@ class Localite::Backend::Tr
     new(io, name).parse(&block)
   end
 
-  def self.load(file, &block)
-    new(File.open(file), file).parse(&block)
+  def self.load(filename, &block)
+    File.open(filename) do |file|
+      new(file, filename).parse(&block)
+    end
   end
 
   def initialize(src, name=nil)
