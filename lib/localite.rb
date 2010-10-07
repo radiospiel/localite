@@ -47,8 +47,16 @@ module Localite
   # raises Localite::Translating::Missing.
   module SymbolAdapter
     def t(*args)
-      translated = Localite.translate(self)
-      Localite::Template.run translated, *args
+      format = if args.first == :text || args.first == :html
+        args.shift
+      else
+        Localite.current_format
+      end
+
+      Localite.format(format) do
+        translated = Localite.translate(self)
+        Localite::Template.run translated, *args
+      end
     end
   end
   ::Symbol.send :include, SymbolAdapter
@@ -61,13 +69,21 @@ module Localite
   # returns nil.
   module StringAdapter
     def t(*args)
-      translated = begin
-        Localite.translate(self)
-      rescue Localite::Translate::Missing
-        self
+      format = if args.first == :text || args.first == :html
+        args.shift
+      else
+        Localite.current_format
       end
-      
-      Localite::Template.run translated, *args
+
+      Localite.format(format) do
+        translated = begin
+          Localite.translate(self)
+        rescue Localite::Translate::Missing
+          self
+        end
+
+        Localite::Template.run translated, *args
+      end
     end
   end
   ::String.send :include, StringAdapter
